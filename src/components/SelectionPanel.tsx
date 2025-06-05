@@ -1,7 +1,10 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, Zap, Blocks } from "lucide-react";
+import { X, Zap, Blocks, Link } from "lucide-react";
+import { ImageUpload } from "./ImageUpload";
 
 interface SelectionPanelProps {
   selectedCount: number;
@@ -10,7 +13,18 @@ interface SelectionPanelProps {
 }
 
 export const SelectionPanel = ({ selectedCount, floorPrice, onClearSelection }: SelectionPanelProps) => {
+  const [linkUrl, setLinkUrl] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const totalPrice = selectedCount * floorPrice;
+
+  const handleMint = () => {
+    console.log("Minting with:", {
+      selectedCount,
+      linkUrl,
+      selectedImage: selectedImage?.name
+    });
+    // TODO: Implement actual minting logic
+  };
 
   return (
     <div className="w-80 border-l border-border bg-muted/30 p-4 hidden lg:block transition-colors duration-300">
@@ -49,7 +63,28 @@ export const SelectionPanel = ({ selectedCount, floorPrice, onClearSelection }: 
             </div>
           </div>
 
+          {/* Link Input */}
+          <div className="space-y-2">
+            <label className="text-xs font-pixel text-muted-foreground">Link (Optional)</label>
+            <div className="relative">
+              <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="https://example.com"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                className="pl-10 text-xs font-pixel"
+              />
+            </div>
+          </div>
+
+          {/* Image Upload */}
+          <ImageUpload 
+            onImageSelect={setSelectedImage}
+            selectedImage={selectedImage}
+          />
+
           <Button
+            onClick={handleMint}
             className="w-full bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 hover:scale-[1.02] group font-pixel text-xs"
             size="lg"
           >
