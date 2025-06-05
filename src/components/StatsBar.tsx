@@ -1,7 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { TrendingUp, Zap, Heart, Users } from "lucide-react";
+import { TrendingUp, Zap, DollarSign } from "lucide-react";
 
 interface StatsBarProps {
   totalPixels: number;
@@ -9,7 +9,7 @@ interface StatsBarProps {
   floorPrice: number;
 }
 
-export const StatsBar = ({ totalPixels, soldPixels }: Omit<StatsBarProps, 'floorPrice'>) => {
+export const StatsBar = ({ totalPixels, soldPixels, floorPrice }: StatsBarProps) => {
   const availablePixels = totalPixels - soldPixels;
   const soldPercentage = (soldPixels / totalPixels) * 100;
 
@@ -19,37 +19,37 @@ export const StatsBar = ({ totalPixels, soldPixels }: Omit<StatsBarProps, 'floor
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <span className="text-xs text-muted-foreground font-pixel">
-            <span className="text-foreground font-semibold">{availablePixels.toLocaleString()}</span> boş alan var
+            <span className="text-foreground font-semibold">{availablePixels.toLocaleString()}</span> blocks available
           </span>
         </div>
         
         <Separator orientation="vertical" className="h-6" />
         
         <div className="flex items-center gap-2">
-          <Heart className="w-3 h-3 text-red-500" />
+          <TrendingUp className="w-3 h-3 text-blue-500" />
           <span className="text-xs text-muted-foreground font-pixel">
-            <span className="text-foreground font-semibold">{soldPixels}</span> hatıra bırakıldı ({soldPercentage.toFixed(1)}%)
+            <span className="text-foreground font-semibold">{soldPixels}</span> minted ({soldPercentage.toFixed(1)}%)
           </span>
         </div>
         
         <Separator orientation="vertical" className="h-6" />
         
         <div className="flex items-center gap-2">
-          <Users className="w-3 h-3 text-blue-500" />
+          <DollarSign className="w-3 h-3 text-yellow-500" />
           <span className="text-xs text-muted-foreground font-pixel">
-            <span className="text-foreground font-semibold">156</span> kişi katıldı
+            Floor: <span className="text-foreground font-semibold">{floorPrice} SOL</span>
           </span>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
-        <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 text-[10px] font-pixel">
+        <Badge variant="secondary" className="bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800 text-[10px] font-pixel">
           <Zap className="w-3 h-3 mr-1" />
-          Canlı hatıra duvarı ✨
+          Real-time minting 🔥
         </Badge>
         
         <div className="text-[10px] text-muted-foreground font-pixel hidden md:block">
-          💫 İlk hatıra: 3 gün önce
+          💰 Total volume: 1,234 SOL
         </div>
       </div>
     </div>
