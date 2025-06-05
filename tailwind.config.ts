@@ -22,17 +22,6 @@ export default {
 			fontFamily: {
 				'pixel': ['Press Start 2P', 'monospace'],
 			},
-			fontSize: {
-				'xs': ['0.875rem', { lineHeight: '1.5' }], // Increased from 0.75rem
-				'sm': ['1rem', { lineHeight: '1.5' }], // Increased from 0.875rem
-				'base': ['1.125rem', { lineHeight: '1.6' }], // Increased from 1rem
-				'lg': ['1.25rem', { lineHeight: '1.6' }], // Increased from 1.125rem
-				'xl': ['1.375rem', { lineHeight: '1.7' }], // Increased from 1.25rem
-				'2xl': ['1.625rem', { lineHeight: '1.7' }], // Increased from 1.5rem
-				'3xl': ['2rem', { lineHeight: '1.8' }], // Increased from 1.875rem
-				'4xl': ['2.5rem', { lineHeight: '1.8' }], // Increased from 2.25rem
-				'5xl': ['3.25rem', { lineHeight: '1.9' }], // Increased from 3rem
-			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
