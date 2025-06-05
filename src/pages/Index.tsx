@@ -1,13 +1,49 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState, useRef, useEffect } from "react";
+import { Header } from "@/components/Header";
+import { PixelGrid } from "@/components/PixelGrid";
+import { StatsFooter } from "@/components/StatsFooter";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const Index = () => {
+  const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
+  const [hoveredPixel, setHoveredPixel] = useState<string | null>(null);
+  const [gridData, setGridData] = useState<Record<string, any>>({});
+  const [isSelecting, setIsSelecting] = useState(false);
+
+  // Mock data for demonstration
+  const totalPixels = 10000; // 100x100 grid
+  const soldPixels = 234;
+  const floorPrice = 0.01;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <TooltipProvider>
+      <div className="h-screen w-full flex flex-col bg-gray-950 text-white overflow-hidden">
+        <Header 
+          selectedCount={selectedPixels.size}
+          onClearSelection={() => setSelectedPixels(new Set())}
+        />
+        
+        <main className="flex-1 relative overflow-hidden">
+          <PixelGrid
+            selectedPixels={selectedPixels}
+            setSelectedPixels={setSelectedPixels}
+            hoveredPixel={hoveredPixel}
+            setHoveredPixel={setHoveredPixel}
+            gridData={gridData}
+            isSelecting={isSelecting}
+            setIsSelecting={setIsSelecting}
+          />
+        </main>
+
+        <StatsFooter 
+          totalPixels={totalPixels}
+          soldPixels={soldPixels}
+          floorPrice={floorPrice}
+          selectedCount={selectedPixels.size}
+        />
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
