@@ -1,0 +1,82 @@
+
+import { useState, useCallback } from "react";
+import { getPixelFromMouse } from "@/utils/pixelUtils";
+
+interface UsePixelGridInteractionsProps {
+  soldPixels: Set<string>;
+  selectedPixels: Set<string>;
+  setSelectedPixels: (pixels: Set<string>) => void;
+  setHoveredPixel: (pixel: string | null) => void;
+  setIsSelecting: (selecting: boolean) => void;
+  pixelSize: number;
+  gridWidth: number;
+  gridHeight: number;
+}
+
+export const usePixelGridInteractions = ({
+  soldPixels,
+  selectedPixels,
+  setSelectedPixels,
+  setHoveredPixel,
+  setIsSelecting,
+  pixelSize,
+  gridWidth,
+  gridHeight
+}: UsePixelGridInteractionsProps) => {
+  const [dragStart, setDragStart] = useState<{x: number, y: number} | null>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent, canvas: HTMLCanvasElement) => {
+    const pixel = getPixelFromMouse(e, canvas, pixelSize, gridWidth, gridHeight);
+    setHoveredPixel(pixel?.key || null);
+
+    if (dragStart && pixel) {
+      const newSelection = new Set<string>();
+      const startX = Math.min(dragStart.x, pixel.x);
+      const endX = Math.max(dragStart.x, pixel.x);
+      const startY = Math.min(dragStart.y, pixel.y);
+      const endY = Math.max(dragStart.y, pixel.y);
+
+      for (let x = startX; x <= endX; x++) {
+        for (let y = startY; y <= endY; y++) {
+          if (!soldPixels.has(`${x},${y}`)) {
+            newSelection.add(`${x},${y}`);
+          }
+        }
+      }
+      setSelectedPixels(newSelection);
+    }
+  }, [dragStart, pixelSize, gridWidth, gridHeight, setHoveredPixel, setSelectedPixels, soldPixels]);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent, canvas: HTMLCanvasElement) => {
+    const pixel = getPixelFromMouse(e, canvas, pixelSize, gridWidth, gridHeight);
+    if (!pixel) return;
+
+    if (soldPixels.has(pixel.key)) return;
+
+    setDragStart({ x: pixel.x, y: pixel.y });
+    setIsSelecting(true);
+
+    if (!e.shiftKey) {
+      const newSelection = new Set([pixel.key]);
+      setSelectedPixels(newSelection);
+    }
+  }, [pixelSize, gridWidth, gridHeight, soldPixels, setIsSelecting, setSelectedPixels]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsSelecting(false);
+    setDragStart(null);
+  }, [setIsSelecting]);
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredPixel(null);
+    setIsSelecting(false);
+    setDragStart(null);
+  }, [setHoveredPixel, setIsSelecting]);
+
+  return {
+    handleMouseMove,
+    handleMouseDown,
+    handleMouseUp,
+    handleMouseLeave
+  };
+};
