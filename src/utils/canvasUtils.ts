@@ -33,15 +33,27 @@ export const drawPixelGrid = (
   const selectedColor = isDark ? '#ffffff' : '#000000';
   const borderColor = isDark ? '#2a2a3a' : '#e8e8e8';
 
-  // Calculate visible area for performance optimization
-  const visibleStartX = Math.max(0, Math.floor(-pan.x / pixelSize));
-  const visibleEndX = Math.min(gridWidth, Math.ceil((canvas.width - pan.x) / pixelSize));
-  const visibleStartY = Math.max(0, Math.floor(-pan.y / pixelSize));
-  const visibleEndY = Math.min(gridHeight, Math.ceil((canvas.height - pan.y) / pixelSize));
+  // Fixed visible area calculation - always render a reasonable range
+  const visibleStartX = Math.max(0, Math.floor(-pan.x / pixelSize) - 5);
+  const visibleEndX = Math.min(gridWidth, Math.floor((canvas.width - pan.x) / pixelSize) + 5);
+  const visibleStartY = Math.max(0, Math.floor(-pan.y / pixelSize) - 5);
+  const visibleEndY = Math.min(gridHeight, Math.floor((canvas.height - pan.y) / pixelSize) + 5);
+
+  console.log('Rendering pixels from', visibleStartX, ',', visibleStartY, 'to', visibleEndX, ',', visibleEndY, 'with pan:', pan);
+
+  // Fallback: if no visible area, render center portion
+  let startX = visibleStartX, endX = visibleEndX, startY = visibleStartY, endY = visibleEndY;
+  if (startX >= endX || startY >= endY) {
+    console.log('No visible area calculated, rendering center portion');
+    startX = Math.max(0, Math.floor(gridWidth / 2) - 20);
+    endX = Math.min(gridWidth, Math.floor(gridWidth / 2) + 20);
+    startY = Math.max(0, Math.floor(gridHeight / 2) - 20);
+    endY = Math.min(gridHeight, Math.floor(gridHeight / 2) + 20);
+  }
 
   // Draw blocks with enhanced playful animations and colors
-  for (let x = visibleStartX; x < visibleEndX; x++) {
-    for (let y = visibleStartY; y < visibleEndY; y++) {
+  for (let x = startX; x < endX; x++) {
+    for (let y = startY; y < endY; y++) {
       const pixelKey = `${x},${y}`;
       const isSelected = selectedPixels.has(pixelKey);
       const isHovered = hoveredPixel === pixelKey;
@@ -103,18 +115,20 @@ export const drawPixelGrid = (
     ctx.strokeStyle = isDark ? '#ffffff10' : '#00000010';
     ctx.lineWidth = 0.5;
     
-    for (let x = visibleStartX; x <= visibleEndX; x++) {
+    for (let x = startX; x <= endX; x++) {
       ctx.beginPath();
-      ctx.moveTo(x * pixelSize, visibleStartY * pixelSize);
-      ctx.lineTo(x * pixelSize, visibleEndY * pixelSize);
+      ctx.moveTo(x * pixelSize, startY * pixelSize);
+      ctx.lineTo(x * pixelSize, endY * pixelSize);
       ctx.stroke();
     }
     
-    for (let y = visibleStartY; y <= visibleEndY; y++) {
+    for (let y = startY; y <= endY; y++) {
       ctx.beginPath();
-      ctx.moveTo(visibleStartX * pixelSize, y * pixelSize);
-      ctx.lineTo(visibleEndX * pixelSize, y * pixelSize);
+      ctx.moveTo(startX * pixelSize, y * pixelSize);
+      ctx.lineTo(endX * pixelSize, y * pixelSize);
       ctx.stroke();
     }
   }
+
+  console.log('Rendered', (endX - startX) * (endY - startY), 'pixels');
 };

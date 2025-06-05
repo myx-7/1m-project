@@ -89,7 +89,7 @@ export const PixelGrid = ({
       return;
     }
 
-    console.log('Drawing grid with dimensions:', dimensions, 'pixelSize:', pixelSize, 'canvas size:', canvas.width, 'x', canvas.height);
+    console.log('Drawing grid with dimensions:', dimensions, 'pixelSize:', pixelSize, 'canvas size:', canvas.width, 'x', canvas.height, 'pan:', pan);
 
     // Set canvas size to container size
     canvas.width = dimensions.width;
@@ -286,19 +286,23 @@ export const PixelGrid = ({
       return;
     }
     
-    const centerX = (dimensions.width - gridWidth * basePixelSize) / 2;
-    const centerY = (dimensions.height - gridHeight * basePixelSize) / 2;
-    console.log('Centering grid at:', centerX, centerY);
+    // Calculate center position to show grid in the middle of the canvas
+    const totalGridWidth = gridWidth * basePixelSize;
+    const totalGridHeight = gridHeight * basePixelSize;
+    const centerX = (dimensions.width - totalGridWidth) / 2;
+    const centerY = (dimensions.height - totalGridHeight) / 2;
+    
+    console.log('Centering grid at:', centerX, centerY, 'total grid size:', totalGridWidth, 'x', totalGridHeight);
     setPan({ x: centerX, y: centerY });
   }, [dimensions, gridWidth, gridHeight, basePixelSize]);
 
-  // Center grid when dimensions are available
+  // Center grid when dimensions are available and not loading
   useEffect(() => {
-    if (dimensions.width > 0 && dimensions.height > 0) {
+    if (!isLoading && dimensions.width > 0 && dimensions.height > 0 && basePixelSize > 0) {
       console.log('Auto-centering grid...');
       centerGrid();
     }
-  }, [dimensions.width, dimensions.height, basePixelSize]);
+  }, [isLoading, dimensions.width, dimensions.height, basePixelSize, centerGrid]);
 
   return (
     <div 
