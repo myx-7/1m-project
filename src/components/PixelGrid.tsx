@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { PixelGridLoading } from "./PixelGridLoading";
@@ -43,7 +42,7 @@ export const PixelGrid = ({
   const soldPixels = generateMockSoldPixels();
   const pixelSize = basePixelSize * zoom;
 
-  console.log('PixelGrid render - dimensions:', dimensions, 'isLoading:', isLoading);
+  console.log('PixelGrid render - dimensions:', dimensions, 'isLoading:', isLoading, 'canvas:', canvasRef.current);
 
   // Loading animation effect with meme flair
   useEffect(() => {
@@ -90,14 +89,18 @@ export const PixelGrid = ({
       return;
     }
 
-    console.log('Drawing grid with dimensions:', dimensions, 'pixelSize:', pixelSize);
+    console.log('Drawing grid with dimensions:', dimensions, 'pixelSize:', pixelSize, 'canvas size:', canvas.width, 'x', canvas.height);
 
     // Set canvas size to container size
     canvas.width = dimensions.width;
     canvas.height = dimensions.height;
 
-    // Clear and apply transformations
+    // Clear canvas with background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = theme === 'dark' ? '#0f0f23' : '#fefefe';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Apply transformations
     ctx.save();
     ctx.translate(pan.x, pan.y);
 
@@ -115,7 +118,7 @@ export const PixelGrid = ({
     });
 
     ctx.restore();
-    console.log('Grid drawing completed');
+    console.log('Grid drawing completed - canvas visible:', canvas.offsetWidth, 'x', canvas.offsetHeight);
   }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, theme, pan, zoom, dimensions]);
 
   useEffect(() => {
@@ -308,10 +311,15 @@ export const PixelGrid = ({
         <>
           <canvas
             ref={canvasRef}
-            className="absolute inset-0 cursor-crosshair bg-card"
+            width={dimensions.width}
+            height={dimensions.height}
+            className="absolute inset-0 cursor-crosshair bg-card block"
             style={{ 
               imageRendering: 'pixelated',
-              cursor: isPanning ? 'grabbing' : 'crosshair'
+              cursor: isPanning ? 'grabbing' : 'crosshair',
+              display: 'block',
+              width: dimensions.width,
+              height: dimensions.height
             }}
             onWheel={handleWheel}
             onMouseMove={(e) => {
