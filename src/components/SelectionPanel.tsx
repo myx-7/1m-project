@@ -54,7 +54,7 @@ export const SelectionPanel = ({ selectedCount, floorPrice, onClearSelection }: 
             size="lg"
           >
             <Zap className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-            Mint {selectedCount} block{selectedCount !== 1 ? 's' : ''} on-chain
+            Mint {selectedCount} block{selectedCount !== 1 ? 's' : ''} 🚀
           </Button>
 
           <div className="text-xs text-muted-foreground text-center space-y-1">

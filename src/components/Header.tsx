@@ -26,7 +26,7 @@ export const Header = () => {
                 Own a piece of internet history, this time on-chain
               </p>
               <Badge variant="secondary" className="text-xs px-2 py-0 bg-primary/10 text-primary border-primary/20 animate-pulse">
-                On-Chain
+                🚀 LIVE
               </Badge>
             </div>
           </div>
