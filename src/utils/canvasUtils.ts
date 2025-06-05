@@ -35,30 +35,35 @@ export const drawPixelGrid = (
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  console.log('Canvas cleared and background set to:', backgroundColor);
+
   // Enhanced theme-aware colors
   const availableColor = isDark ? '#2d2d44' : '#ffffff';
   const hoveredColor = isDark ? '#3a3a5a' : '#f8f8f8';
   const selectedColor = isDark ? '#ffffff' : '#000000';
   const borderColor = isDark ? '#4a4a6a' : '#e0e0e0';
 
-  // Always render a reasonable portion of the grid
+  // Calculate visible area - ensure we render something
   const startX = Math.max(0, Math.floor(-pan.x / pixelSize));
-  const endX = Math.min(gridWidth, Math.floor((canvas.width - pan.x) / pixelSize) + 1);
+  const endX = Math.min(gridWidth, Math.ceil((canvas.width - pan.x) / pixelSize) + 1);
   const startY = Math.max(0, Math.floor(-pan.y / pixelSize));
-  const endY = Math.min(gridHeight, Math.floor((canvas.height - pan.y) / pixelSize) + 1);
+  const endY = Math.min(gridHeight, Math.ceil((canvas.height - pan.y) / pixelSize) + 1);
 
-  console.log('Canvas size:', canvas.width, 'x', canvas.height);
-  console.log('Pan:', pan, 'PixelSize:', pixelSize);
-  console.log('Rendering from', startX, startY, 'to', endX, endY);
+  console.log('Calculated render area:', { startX, endX, startY, endY, pan, pixelSize });
 
-  // Fallback: ensure we always render something visible
-  let renderStartX = startX, renderEndX = endX, renderStartY = startY, renderEndY = endY;
+  // Fallback rendering to ensure something is always visible
+  let renderStartX = startX;
+  let renderEndX = endX;
+  let renderStartY = startY;
+  let renderEndY = endY;
+
+  // If calculated area is empty, render a default area
   if (renderStartX >= renderEndX || renderStartY >= renderEndY) {
-    console.log('No visible area, using fallback rendering');
+    console.log('Empty render area, using fallback');
     renderStartX = 0;
-    renderEndX = Math.min(50, gridWidth);
+    renderEndX = Math.min(20, gridWidth);
     renderStartY = 0;
-    renderEndY = Math.min(50, gridHeight);
+    renderEndY = Math.min(20, gridHeight);
   }
 
   let pixelsRendered = 0;
@@ -74,12 +79,6 @@ export const drawPixelGrid = (
       // Calculate pixel position
       const pixelX = pan.x + (x * pixelSize);
       const pixelY = pan.y + (y * pixelSize);
-
-      // Skip pixels that are completely outside canvas
-      if (pixelX + pixelSize < 0 || pixelX > canvas.width || 
-          pixelY + pixelSize < 0 || pixelY > canvas.height) {
-        continue;
-      }
 
       let fillStyle = availableColor;
 
@@ -126,8 +125,12 @@ export const drawPixelGrid = (
 
   console.log('Actually rendered', pixelsRendered, 'pixels');
   
-  // Draw a test rectangle to ensure canvas is working
-  ctx.fillStyle = isDark ? '#ff0000' : '#0000ff';
-  ctx.fillRect(10, 10, 50, 50);
-  console.log('Test rectangle drawn at 10,10');
+  // Draw a visible test indicator in the top-left corner
+  ctx.fillStyle = '#ff0000';
+  ctx.fillRect(10, 10, 20, 20);
+  ctx.fillStyle = '#00ff00';
+  ctx.fillRect(40, 10, 20, 20);
+  ctx.fillStyle = '#0000ff';
+  ctx.fillRect(70, 10, 20, 20);
+  console.log('Test indicators drawn at top-left');
 };

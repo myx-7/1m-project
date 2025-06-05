@@ -31,7 +31,7 @@ export const PixelGrid = ({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [basePixelSize, setBasePixelSize] = useState(8);
   const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 50, y: 50 }); // Start with small offset
+  const [pan, setPan] = useState({ x: 0, y: 0 }); // Start at origin
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +48,7 @@ export const PixelGrid = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 500); // Reduced loading time
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -262,12 +262,13 @@ export const PixelGrid = ({
 
   const resetView = useCallback(() => {
     setZoom(1);
-    setPan({ x: 50, y: 50 });
+    setPan({ x: 0, y: 0 });
   }, []);
 
   const centerGrid = useCallback(() => {
     if (dimensions.width === 0 || dimensions.height === 0) return;
     
+    // Center the grid properly in the container
     const totalGridWidth = gridWidth * basePixelSize;
     const totalGridHeight = gridHeight * basePixelSize;
     const centerX = (dimensions.width - totalGridWidth) / 2;
@@ -277,7 +278,7 @@ export const PixelGrid = ({
     setPan({ x: centerX, y: centerY });
   }, [dimensions, gridWidth, gridHeight, basePixelSize]);
 
-  // Center grid when dimensions are available and not loading
+  // Center grid when ready
   useEffect(() => {
     if (!isLoading && dimensions.width > 0 && dimensions.height > 0 && basePixelSize > 0) {
       console.log('Auto-centering grid...');
@@ -298,32 +299,67 @@ export const PixelGrid = ({
             ref={canvasRef}
             width={dimensions.width}
             height={dimensions.height}
-            className="absolute inset-0 cursor-crosshair block border border-red-500"
+            className="absolute inset-0 cursor-crosshair block"
             style={{ 
               imageRendering: 'pixelated',
               cursor: isPanning ? 'grabbing' : 'crosshair',
-              width: dimensions.width,
-              height: dimensions.height
+              width: `${dimensions.width}px`,
+              height: `${dimensions.height}px`,
+              backgroundColor: theme === 'dark' ? '#1a1a2e' : '#f0f0f0'
             }}
-            onWheel={handleWheel}
+            onWheel={(e) => {
+              e.preventDefault();
+              const rect = canvasRef.current?.getBoundingClientRect();
+              if (!rect) return;
+              
+              const centerX = e.clientX - rect.left;
+              const centerY = e.clientY - rect.top;
+              
+              const zoomSpeed = 0.1;
+              const minZoom = 0.5;
+              const maxZoom = 10;
+              const delta = -e.deltaY / 100;
+              
+              const newZoom = Math.max(minZoom, Math.min(maxZoom, zoom + delta * zoomSpeed));
+              
+              const zoomRatio = newZoom / zoom;
+              setPan(prev => ({
+                x: centerX - (centerX - prev.x) * zoomRatio,
+                y: centerY - (centerY - prev.y) * zoomRatio
+              }));
+              
+              setZoom(newZoom);
+            }}
             onMouseMove={(e) => {
-              handleMouseMove(e);
-              if (!isPanning) {
+              if (isPanning) {
+                const deltaX = e.clientX - lastPanPoint.x;
+                const deltaY = e.clientY - lastPanPoint.y;
+                
+                setPan(prev => ({
+                  x: prev.x + deltaX,
+                  y: prev.y + deltaY
+                }));
+                
+                setLastPanPoint({ x: e.clientX, y: e.clientY });
+              } else {
                 interactions.handleMouseMove(e, canvasRef.current!, pan, zoom);
               }
             }}
             onMouseDown={(e) => {
-              handleMouseDown(e);
-              if (!isPanning) {
+              if (e.button === 1 || e.ctrlKey || e.metaKey) {
+                setIsPanning(true);
+                setLastPanPoint({ x: e.clientX, y: e.clientY });
+                e.preventDefault();
+              } else if (!isPanning) {
                 interactions.handleMouseDown(e, canvasRef.current!, pan, zoom);
               }
             }}
             onMouseUp={() => {
-              handleMouseUp();
+              setIsPanning(false);
               interactions.handleMouseUp();
             }}
             onMouseLeave={() => {
-              handleMouseUp();
+              setIsPanning(false);
               interactions.handleMouseLeave();
             }}
             onTouchStart={handleTouchStart}
@@ -333,8 +369,14 @@ export const PixelGrid = ({
           
           <ZoomControls
             zoom={zoom}
-            onZoomIn={() => handleZoom(1)}
-            onZoomOut={() => handleZoom(-1)}
+            onZoomIn={() => {
+              const newZoom = Math.min(10, zoom + 0.1);
+              setZoom(newZoom);
+            }}
+            onZoomOut={() => {
+              const newZoom = Math.max(0.5, zoom - 0.1);
+              setZoom(newZoom);
+            }}
             onReset={resetView}
             onCenter={centerGrid}
           />
