@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { PixelGridLoading } from "./PixelGridLoading";
@@ -42,9 +43,15 @@ export const PixelGrid = ({
   const soldPixels = generateMockSoldPixels();
   const pixelSize = basePixelSize * zoom;
 
+  console.log('PixelGrid render - dimensions:', dimensions, 'isLoading:', isLoading);
+
   // Loading animation effect with meme flair
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
+    console.log('Setting loading timer...');
+    const timer = setTimeout(() => {
+      console.log('Loading finished!');
+      setIsLoading(false);
+    }, 800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -52,6 +59,8 @@ export const PixelGrid = ({
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const newBasePixelSize = calculatePixelSize(rect.width, rect.height, gridWidth, gridHeight);
+      
+      console.log('Updating dimensions:', rect.width, 'x', rect.height, 'pixelSize:', newBasePixelSize);
       
       setBasePixelSize(newBasePixelSize);
       setDimensions({
@@ -62,6 +71,7 @@ export const PixelGrid = ({
   }, []);
 
   useEffect(() => {
+    console.log('Setting up resize listeners...');
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
@@ -69,10 +79,18 @@ export const PixelGrid = ({
 
   const drawGrid = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.log('No canvas ref available');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.log('No canvas context available');
+      return;
+    }
+
+    console.log('Drawing grid with dimensions:', dimensions, 'pixelSize:', pixelSize);
 
     // Set canvas size to container size
     canvas.width = dimensions.width;
@@ -97,13 +115,16 @@ export const PixelGrid = ({
     });
 
     ctx.restore();
+    console.log('Grid drawing completed');
   }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, theme, pan, zoom, dimensions]);
 
   useEffect(() => {
-    if (!isLoading) {
+    console.log('Drawing effect triggered - isLoading:', isLoading, 'dimensions:', dimensions);
+    if (!isLoading && dimensions.width > 0 && dimensions.height > 0) {
+      console.log('Calling drawGrid...');
       drawGrid();
     }
-  }, [drawGrid, isLoading]);
+  }, [drawGrid, isLoading, dimensions]);
 
   // Zoom handlers
   const handleZoom = useCallback((delta: number, centerX?: number, centerY?: number) => {
@@ -257,14 +278,24 @@ export const PixelGrid = ({
   }, []);
 
   const centerGrid = useCallback(() => {
-    const centerX = (dimensions.width - gridWidth * pixelSize) / 2;
-    const centerY = (dimensions.height - gridHeight * pixelSize) / 2;
+    if (dimensions.width === 0 || dimensions.height === 0) {
+      console.log('Cannot center grid - dimensions not ready:', dimensions);
+      return;
+    }
+    
+    const centerX = (dimensions.width - gridWidth * basePixelSize) / 2;
+    const centerY = (dimensions.height - gridHeight * basePixelSize) / 2;
+    console.log('Centering grid at:', centerX, centerY);
     setPan({ x: centerX, y: centerY });
-  }, [dimensions, gridWidth, gridHeight, pixelSize]);
+  }, [dimensions, gridWidth, gridHeight, basePixelSize]);
 
+  // Center grid when dimensions are available
   useEffect(() => {
-    centerGrid();
-  }, [centerGrid]);
+    if (dimensions.width > 0 && dimensions.height > 0) {
+      console.log('Auto-centering grid...');
+      centerGrid();
+    }
+  }, [dimensions.width, dimensions.height, basePixelSize]);
 
   return (
     <div 
