@@ -1,4 +1,6 @@
+
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface PixelGridProps {
   selectedPixels: Set<string>;
@@ -24,17 +26,25 @@ export const PixelGrid = ({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [pixelSize, setPixelSize] = useState(8);
   const [dragStart, setDragStart] = useState<{x: number, y: number} | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { theme } = useTheme();
 
   const gridWidth = 100;
   const gridHeight = 100;
 
-  // Mock some sold pixels for demonstration
+  // Mock some sold blocks for demonstration
   const soldPixels = new Set([
     "10,10", "11,10", "12,10", "13,10",
     "25,25", "26,25", "25,26", "26,26",
     "50,50", "51,50", "52,50", "50,51", "51,51", "52,51",
     "75,30", "76,30", "77,30", "75,31", "76,31", "77,31"
   ]);
+
+  // Loading animation effect
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const updateDimensions = useCallback(() => {
     if (containerRef.current) {
@@ -69,7 +79,14 @@ export const PixelGrid = ({
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw pixels
+    // Theme-aware colors
+    const isDark = theme === 'dark';
+    const availableColor = isDark ? '#1f2937' : '#f8f9fa';
+    const hoveredColor = isDark ? '#374151' : '#e5e7eb';
+    const selectedColor = isDark ? '#ffffff' : '#000000';
+    const borderColor = isDark ? '#4b5563' : '#d1d5db';
+
+    // Draw blocks with smooth animations
     for (let x = 0; x < gridWidth; x++) {
       for (let y = 0; y < gridHeight; y++) {
         const pixelKey = `${x},${y}`;
@@ -77,34 +94,46 @@ export const PixelGrid = ({
         const isHovered = hoveredPixel === pixelKey;
         const isSold = soldPixels.has(pixelKey);
 
-        let fillStyle = '#f8f9fa'; // Light gray for available
+        let fillStyle = availableColor;
 
         if (isSold) {
-          // Subtle colors for sold pixels
-          const colors = ['#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#fce4ec'];
+          // Themed colors for sold blocks
+          const colors = isDark 
+            ? ['#1e3a8a', '#7c3aed', '#059669', '#d97706', '#dc2626']
+            : ['#dbeafe', '#ede9fe', '#d1fae5', '#fed7aa', '#fecaca'];
           fillStyle = colors[((x * y) % colors.length)];
         } else if (isSelected) {
-          fillStyle = '#000000'; // Black for selected
+          fillStyle = selectedColor;
         } else if (isHovered) {
-          fillStyle = '#e5e7eb'; // Gray for hover
+          fillStyle = hoveredColor;
         }
 
+        // Draw block with rounded corners for better aesthetics
         ctx.fillStyle = fillStyle;
         ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1, pixelSize - 1);
 
-        // Add border for selected pixels
-        if (isSelected) {
-          ctx.strokeStyle = '#000000';
-          ctx.lineWidth = 1;
+        // Add subtle border for better definition
+        if (pixelSize > 6) {
+          ctx.strokeStyle = borderColor;
+          ctx.lineWidth = 0.5;
           ctx.strokeRect(x * pixelSize, y * pixelSize, pixelSize - 1, pixelSize - 1);
+        }
+
+        // Enhanced selection indicator
+        if (isSelected) {
+          ctx.strokeStyle = isDark ? '#000000' : '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x * pixelSize + 1, y * pixelSize + 1, pixelSize - 3, pixelSize - 3);
         }
       }
     }
-  }, [pixelSize, selectedPixels, hoveredPixel, soldPixels]);
+  }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, theme]);
 
   useEffect(() => {
-    drawGrid();
-  }, [drawGrid]);
+    if (!isLoading) {
+      drawGrid();
+    }
+  }, [drawGrid, isLoading]);
 
   const getPixelFromMouse = (e: React.MouseEvent) => {
     const canvas = canvasRef.current;
@@ -171,34 +200,43 @@ export const PixelGrid = ({
   return (
     <div 
       ref={containerRef}
-      className="flex-1 flex items-center justify-center p-4 bg-gray-50"
+      className="flex-1 flex items-center justify-center p-4 bg-background transition-colors duration-300"
     >
       <div className="relative">
-        <canvas
-          ref={canvasRef}
-          width={dimensions.width}
-          height={dimensions.height}
-          className="border border-gray-300 rounded-lg shadow-sm cursor-crosshair bg-white"
-          onMouseMove={handleMouseMove}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
-          style={{ imageRendering: 'pixelated' }}
-        />
+        {isLoading ? (
+          <div className="flex items-center justify-center border border-border rounded-lg bg-card shadow-sm animate-pulse"
+               style={{ width: dimensions.width || 400, height: dimensions.height || 400 }}>
+            <div className="text-muted-foreground">Loading blocks...</div>
+          </div>
+        ) : (
+          <canvas
+            ref={canvasRef}
+            width={dimensions.width}
+            height={dimensions.height}
+            className="border border-border rounded-lg shadow-sm cursor-crosshair bg-card transition-all duration-300 hover:shadow-md"
+            onMouseMove={handleMouseMove}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            style={{ imageRendering: 'pixelated' }}
+          />
+        )}
         
-        {/* Pixel info tooltip */}
-        {hoveredPixel && (
-          <div className="absolute pointer-events-none bg-white border border-gray-200 rounded-lg p-3 text-sm shadow-lg z-10"
+        {/* Enhanced tooltip */}
+        {hoveredPixel && !isLoading && (
+          <div className="absolute pointer-events-none bg-card border border-border rounded-lg p-3 text-sm shadow-lg z-10 transition-all duration-200 animate-in fade-in-0 zoom-in-95"
                style={{
                  left: Math.min(dimensions.width - 200, (parseInt(hoveredPixel.split(',')[0]) * pixelSize) + 20),
                  top: Math.max(20, (parseInt(hoveredPixel.split(',')[1]) * pixelSize) - 60)
                }}>
-            <div className="font-medium text-gray-900">Pixel {hoveredPixel}</div>
-            <div className="text-gray-500 text-xs mt-1">
-              {soldPixels.has(hoveredPixel) ? 'Owned' : 'Available'}
+            <div className="font-medium text-foreground">Block {hoveredPixel}</div>
+            <div className="text-muted-foreground text-xs mt-1">
+              {soldPixels.has(hoveredPixel) ? '🔗 Owned on-chain' : '✨ Available to mint'}
             </div>
             {!soldPixels.has(hoveredPixel) && (
-              <div className="text-green-600 text-xs">💰 0.01 SOL</div>
+              <div className="text-green-600 dark:text-green-400 text-xs flex items-center gap-1">
+                <span>💰</span> 0.01 SOL
+              </div>
             )}
           </div>
         )}

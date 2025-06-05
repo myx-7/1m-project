@@ -5,6 +5,7 @@ import { PixelGrid } from "@/components/PixelGrid";
 import { StatsBar } from "@/components/StatsBar";
 import { SelectionPanel } from "@/components/SelectionPanel";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const Index = () => {
   const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
@@ -18,39 +19,41 @@ const Index = () => {
   const floorPrice = 0.01;
 
   return (
-    <TooltipProvider>
-      <div className="h-screen w-full flex flex-col bg-white text-gray-900 overflow-hidden">
-        <Header />
-        
-        <main className="flex-1 flex">
-          <div className="flex-1 relative">
-            <PixelGrid
-              selectedPixels={selectedPixels}
-              setSelectedPixels={setSelectedPixels}
-              hoveredPixel={hoveredPixel}
-              setHoveredPixel={setHoveredPixel}
-              gridData={gridData}
-              isSelecting={isSelecting}
-              setIsSelecting={setIsSelecting}
-            />
-          </div>
+    <ThemeProvider>
+      <TooltipProvider>
+        <div className="h-screen w-full flex flex-col bg-background text-foreground overflow-hidden transition-colors duration-300">
+          <Header />
           
-          {selectedPixels.size > 0 && (
-            <SelectionPanel
-              selectedCount={selectedPixels.size}
-              floorPrice={floorPrice}
-              onClearSelection={() => setSelectedPixels(new Set())}
-            />
-          )}
-        </main>
+          <main className="flex-1 flex">
+            <div className="flex-1 relative">
+              <PixelGrid
+                selectedPixels={selectedPixels}
+                setSelectedPixels={setSelectedPixels}
+                hoveredPixel={hoveredPixel}
+                setHoveredPixel={setHoveredPixel}
+                gridData={gridData}
+                isSelecting={isSelecting}
+                setIsSelecting={setIsSelecting}
+              />
+            </div>
+            
+            {selectedPixels.size > 0 && (
+              <SelectionPanel
+                selectedCount={selectedPixels.size}
+                floorPrice={floorPrice}
+                onClearSelection={() => setSelectedPixels(new Set())}
+              />
+            )}
+          </main>
 
-        <StatsBar 
-          totalPixels={totalPixels}
-          soldPixels={soldPixels}
-          floorPrice={floorPrice}
-        />
-      </div>
-    </TooltipProvider>
+          <StatsBar 
+            totalPixels={totalPixels}
+            soldPixels={soldPixels}
+            floorPrice={floorPrice}
+          />
+        </div>
+      </TooltipProvider>
+    </ThemeProvider>
   );
 };
 
