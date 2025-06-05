@@ -90,17 +90,6 @@ export const PixelGrid = ({
     console.log('Canvas size set to:', canvas.width, canvas.height);
     console.log('Pixel size:', pixelSize, 'Pan:', pan, 'Zoom:', zoom);
 
-    // Clear canvas with a visible background
-    const isDark = theme === 'dark';
-    ctx.fillStyle = isDark ? '#1a1a1a' : '#f8f8f8';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw a test rectangle to verify canvas is working
-    ctx.fillStyle = isDark ? '#333' : '#ddd';
-    ctx.fillRect(10, 10, 50, 50);
-    ctx.fillStyle = isDark ? '#fff' : '#000';
-    ctx.fillText('TEST', 15, 30);
-
     drawPixelGrid(ctx, canvas, {
       gridWidth,
       gridHeight,
@@ -303,21 +292,20 @@ export const PixelGrid = ({
   return (
     <div 
       ref={containerRef}
-      className="flex-1 relative overflow-hidden bg-background transition-colors duration-300"
-      style={{ minHeight: '400px' }}
+      className="w-full h-full relative bg-gradient-to-br from-background via-background to-muted/20 overflow-hidden transition-all duration-300"
     >
       {isLoading ? (
-        <PixelGridLoading width={dimensions.width || 800} height={dimensions.height || 600} />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <PixelGridLoading width={400} height={300} />
+        </div>
       ) : (
         <>
           <canvas
             ref={canvasRef}
-            className="absolute inset-0"
+            className="absolute inset-0 w-full h-full transition-all duration-200"
             style={{ 
               imageRendering: 'pixelated',
               cursor: isPanning ? 'grabbing' : 'crosshair',
-              width: '100%',
-              height: '100%'
             }}
             onWheel={handleWheel}
             onMouseMove={(e) => {

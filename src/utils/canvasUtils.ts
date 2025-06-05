@@ -28,18 +28,24 @@ export const drawPixelGrid = (
 ) => {
   console.log('Drawing pixel grid with:', { gridWidth, gridHeight, pixelSize, pan, zoom });
 
-  // Enhanced theme-aware colors
+  // Modern theme-aware colors with better contrast
   const isDark = theme === 'dark';
-  const availableColor = isDark ? '#2a2a2a' : '#f0f0f0';
-  const hoveredColor = isDark ? '#3a3a3a' : '#e0e0e0';
-  const selectedColor = isDark ? '#ffffff' : '#000000';
-  const borderColor = isDark ? '#444444' : '#cccccc';
+  const backgroundColor = isDark ? '#0a0a0a' : '#fafafa';
+  const availableColor = isDark ? '#1a1a1a' : '#ffffff';
+  const hoveredColor = isDark ? '#2d2d2d' : '#f0f0f0';
+  const selectedColor = isDark ? '#3b82f6' : '#2563eb';
+  const borderColor = isDark ? '#333333' : '#e5e5e5';
+  const gridLineColor = isDark ? '#ffffff08' : '#00000008';
+
+  // Clear canvas with modern background
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Apply pan transformation
   ctx.save();
   ctx.translate(pan.x, pan.y);
 
-  // Calculate visible area for performance - with safety checks
+  // Calculate visible area for performance
   const safePixelSize = Math.max(1, pixelSize);
   const visibleStartX = Math.max(0, Math.floor(-pan.x / safePixelSize));
   const visibleEndX = Math.min(gridWidth, Math.ceil((canvas.width - pan.x) / safePixelSize) + 1);
@@ -48,7 +54,7 @@ export const drawPixelGrid = (
 
   console.log('Visible area:', { visibleStartX, visibleEndX, visibleStartY, visibleEndY });
 
-  // Draw pixels
+  // Draw pixels with modern styling
   for (let x = visibleStartX; x < visibleEndX; x++) {
     for (let y = visibleStartY; y < visibleEndY; y++) {
       const pixelKey = `${x},${y}`;
@@ -59,10 +65,10 @@ export const drawPixelGrid = (
       let fillStyle = availableColor;
 
       if (isSold) {
-        // Vibrant colors for sold pixels
+        // Modern vibrant colors for sold pixels
         const colors = isDark 
-          ? ['#ff4757', '#3742fa', '#2ed573', '#ffa502', '#ff6348', '#747d8c', '#5f27cd', '#00d2d3', '#ff9ff3', '#54a0ff']
-          : ['#ff3838', '#3742fa', '#2ed573', '#ff9f43', '#ff6b6b', '#70a1ff', '#5f27cd', '#00d2d3', '#ff9ff3', '#54a0ff'];
+          ? ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#6366f1']
+          : ['#dc2626', '#2563eb', '#059669', '#d97706', '#7c3aed', '#0891b2', '#ea580c', '#65a30d', '#db2777', '#4f46e5'];
         fillStyle = colors[((x * 7 + y * 3) % colors.length)];
       } else if (isSelected) {
         fillStyle = selectedColor;
@@ -72,40 +78,44 @@ export const drawPixelGrid = (
 
       const pixelX = x * safePixelSize;
       const pixelY = y * safePixelSize;
-      const pixelWidth = Math.max(1, safePixelSize - 1);
-      const pixelHeight = Math.max(1, safePixelSize - 1);
+      const pixelWidth = Math.max(1, safePixelSize - (safePixelSize > 4 ? 1 : 0));
+      const pixelHeight = Math.max(1, safePixelSize - (safePixelSize > 4 ? 1 : 0));
 
-      // Draw pixel
-      ctx.fillStyle = fillStyle;
-      ctx.fillRect(pixelX, pixelY, pixelWidth, pixelHeight);
-
-      // Draw border for larger pixels
-      if (safePixelSize > 4) {
-        ctx.strokeStyle = borderColor;
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(pixelX, pixelY, pixelWidth, pixelHeight);
+      // Draw pixel with rounded corners for modern look
+      if (safePixelSize > 3) {
+        const radius = Math.min(2, safePixelSize / 8);
+        ctx.fillStyle = fillStyle;
+        ctx.beginPath();
+        ctx.roundRect(pixelX, pixelY, pixelWidth, pixelHeight, radius);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = fillStyle;
+        ctx.fillRect(pixelX, pixelY, pixelWidth, pixelHeight);
       }
 
-      // Enhanced selection indicator
-      if (isSelected && safePixelSize > 2) {
-        ctx.strokeStyle = isDark ? '#000000' : '#ffffff';
-        ctx.lineWidth = Math.max(1, safePixelSize / 8);
-        const inset = Math.max(1, Math.floor(safePixelSize / 8));
+      // Modern selection indicator with glow effect
+      if (isSelected && safePixelSize > 3) {
+        ctx.shadowColor = selectedColor;
+        ctx.shadowBlur = safePixelSize / 4;
+        ctx.strokeStyle = isDark ? '#ffffff' : '#000000';
+        ctx.lineWidth = Math.max(1, safePixelSize / 12);
+        const inset = Math.max(1, Math.floor(safePixelSize / 10));
         ctx.strokeRect(pixelX + inset, pixelY + inset, pixelWidth - 2 * inset, pixelHeight - 2 * inset);
+        ctx.shadowBlur = 0;
       }
 
-      // Enhanced hover effect
+      // Subtle hover effect
       if (isHovered && !isSelected && safePixelSize > 2) {
-        ctx.strokeStyle = isDark ? '#ffffff80' : '#00000080';
-        ctx.lineWidth = Math.max(1, safePixelSize / 10);
+        ctx.strokeStyle = isDark ? '#ffffff40' : '#00000040';
+        ctx.lineWidth = Math.max(0.5, safePixelSize / 16);
         ctx.strokeRect(pixelX, pixelY, pixelWidth, pixelHeight);
       }
     }
   }
 
-  // Draw grid lines when zoomed in
-  if (safePixelSize > 8) {
-    ctx.strokeStyle = isDark ? '#ffffff20' : '#00000020';
+  // Draw subtle grid lines when zoomed in
+  if (safePixelSize > 12) {
+    ctx.strokeStyle = gridLineColor;
     ctx.lineWidth = 0.5;
     
     // Vertical lines
