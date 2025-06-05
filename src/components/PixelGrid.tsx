@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { PixelGridLoading } from "./PixelGridLoading";
@@ -78,10 +79,13 @@ export const PixelGrid = ({
     canvas.width = dimensions.width;
     canvas.height = dimensions.height;
 
-    // Clear and apply transformations
+    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
-    ctx.translate(pan.x, pan.y);
+    
+    // Set background color based on theme
+    const isDark = theme === 'dark';
+    ctx.fillStyle = isDark ? '#0a0a0a' : '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     drawPixelGrid(ctx, canvas, {
       gridWidth,
@@ -95,8 +99,6 @@ export const PixelGrid = ({
       zoom,
       containerDimensions: dimensions
     });
-
-    ctx.restore();
   }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, theme, pan, zoom, dimensions]);
 
   useEffect(() => {
@@ -257,14 +259,23 @@ export const PixelGrid = ({
   }, []);
 
   const centerGrid = useCallback(() => {
-    const centerX = (dimensions.width - gridWidth * pixelSize) / 2;
-    const centerY = (dimensions.height - gridHeight * pixelSize) / 2;
+    if (dimensions.width === 0 || dimensions.height === 0) return;
+    
+    const totalGridWidth = gridWidth * pixelSize;
+    const totalGridHeight = gridHeight * pixelSize;
+    
+    const centerX = (dimensions.width - totalGridWidth) / 2;
+    const centerY = (dimensions.height - totalGridHeight) / 2;
+    
     setPan({ x: centerX, y: centerY });
   }, [dimensions, gridWidth, gridHeight, pixelSize]);
 
+  // Center the grid when dimensions or pixel size changes
   useEffect(() => {
-    centerGrid();
-  }, [centerGrid]);
+    if (dimensions.width > 0 && dimensions.height > 0) {
+      centerGrid();
+    }
+  }, [centerGrid, dimensions.width, dimensions.height]);
 
   return (
     <div 
@@ -277,7 +288,7 @@ export const PixelGrid = ({
         <>
           <canvas
             ref={canvasRef}
-            className="absolute inset-0 cursor-crosshair bg-card"
+            className="absolute inset-0 cursor-crosshair"
             style={{ 
               imageRendering: 'pixelated',
               cursor: isPanning ? 'grabbing' : 'crosshair'
