@@ -1,14 +1,36 @@
 
 export const getPixelFromMouse = (
-  e: React.MouseEvent,
+  e: React.MouseEvent | React.TouchEvent,
   canvas: HTMLCanvasElement,
   pixelSize: number,
   gridWidth: number,
-  gridHeight: number
+  gridHeight: number,
+  pan: { x: number; y: number } = { x: 0, y: 0 },
+  zoom: number = 1
 ) => {
   const rect = canvas.getBoundingClientRect();
-  const x = Math.floor((e.clientX - rect.left) / pixelSize);
-  const y = Math.floor((e.clientY - rect.top) / pixelSize);
+  
+  // Get mouse/touch coordinates
+  let clientX: number, clientY: number;
+  if ('touches' in e && e.touches.length > 0) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else if ('clientX' in e) {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  } else {
+    return null;
+  }
+  
+  // Transform coordinates accounting for pan and zoom
+  const canvasX = clientX - rect.left;
+  const canvasY = clientY - rect.top;
+  
+  const worldX = (canvasX - pan.x) / pixelSize;
+  const worldY = (canvasY - pan.y) / pixelSize;
+  
+  const x = Math.floor(worldX);
+  const y = Math.floor(worldY);
 
   if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
     return { x, y, key: `${x},${y}` };

@@ -11,6 +11,9 @@ interface UsePixelGridInteractionsProps {
   pixelSize: number;
   gridWidth: number;
   gridHeight: number;
+  pan?: { x: number; y: number };
+  zoom?: number;
+  isPanning?: boolean;
 }
 
 export const usePixelGridInteractions = ({
@@ -21,12 +24,22 @@ export const usePixelGridInteractions = ({
   setIsSelecting,
   pixelSize,
   gridWidth,
-  gridHeight
+  gridHeight,
+  pan = { x: 0, y: 0 },
+  zoom = 1,
+  isPanning = false
 }: UsePixelGridInteractionsProps) => {
   const [dragStart, setDragStart] = useState<{x: number, y: number} | null>(null);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent, canvas: HTMLCanvasElement) => {
-    const pixel = getPixelFromMouse(e, canvas, pixelSize, gridWidth, gridHeight);
+  const handleMouseMove = useCallback((
+    e: React.MouseEvent, 
+    canvas: HTMLCanvasElement,
+    currentPan: { x: number; y: number },
+    currentZoom: number
+  ) => {
+    if (isPanning) return;
+    
+    const pixel = getPixelFromMouse(e, canvas, pixelSize, gridWidth, gridHeight, currentPan, currentZoom);
     setHoveredPixel(pixel?.key || null);
 
     if (dragStart && pixel) {
@@ -45,10 +58,18 @@ export const usePixelGridInteractions = ({
       }
       setSelectedPixels(newSelection);
     }
-  }, [dragStart, pixelSize, gridWidth, gridHeight, setHoveredPixel, setSelectedPixels, soldPixels]);
+  }, [dragStart, pixelSize, gridWidth, gridHeight, setHoveredPixel, setSelectedPixels, soldPixels, isPanning]);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent, canvas: HTMLCanvasElement) => {
-    const pixel = getPixelFromMouse(e, canvas, pixelSize, gridWidth, gridHeight);
+  const handleMouseDown = useCallback((
+    e: React.MouseEvent, 
+    canvas: HTMLCanvasElement,
+    currentPan: { x: number; y: number },
+    currentZoom: number
+  ) => {
+    if (isPanning) return;
+    if (e.button !== 0) return; // Only left mouse button
+    
+    const pixel = getPixelFromMouse(e, canvas, pixelSize, gridWidth, gridHeight, currentPan, currentZoom);
     if (!pixel) return;
 
     if (soldPixels.has(pixel.key)) return;
@@ -60,7 +81,7 @@ export const usePixelGridInteractions = ({
       const newSelection = new Set([pixel.key]);
       setSelectedPixels(newSelection);
     }
-  }, [pixelSize, gridWidth, gridHeight, soldPixels, setIsSelecting, setSelectedPixels]);
+  }, [pixelSize, gridWidth, gridHeight, soldPixels, setIsSelecting, setSelectedPixels, isPanning]);
 
   const handleMouseUp = useCallback(() => {
     setIsSelecting(false);

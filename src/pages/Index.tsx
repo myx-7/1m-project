@@ -39,7 +39,7 @@ const Index = () => {
               />
             </div>
             
-            {/* Right Sidebar - Selection Panel or Chat */}
+            {/* Right Sidebar - Selection Panel or Chat - Hidden on mobile */}
             <div className="hidden lg:flex flex-col w-80 border-l border-border bg-muted/30">
               {selectedPixels.size > 0 ? (
                 <div className="flex-1">
@@ -56,6 +56,17 @@ const Index = () => {
               )}
             </div>
           </main>
+
+          {/* Mobile Selection Panel - Only show when pixels are selected */}
+          {selectedPixels.size > 0 && (
+            <div className="lg:hidden border-t border-border bg-muted/30">
+              <SelectionPanel
+                selectedCount={selectedPixels.size}
+                floorPrice={floorPrice}
+                onClearSelection={() => setSelectedPixels(new Set())}
+              />
+            </div>
+          )}
 
           <StatsBar 
             totalPixels={totalPixels}
