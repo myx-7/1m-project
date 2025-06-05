@@ -1,6 +1,4 @@
-
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PixelGridProps {
   selectedPixels: Set<string>;
@@ -41,8 +39,8 @@ export const PixelGrid = ({
   const updateDimensions = useCallback(() => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
-      const maxWidth = rect.width - 40; // padding
-      const maxHeight = rect.height - 40; // padding
+      const maxWidth = rect.width - 40;
+      const maxHeight = rect.height - 40;
       
       const maxPixelWidth = Math.floor(maxWidth / gridWidth);
       const maxPixelHeight = Math.floor(maxHeight / gridHeight);
@@ -79,24 +77,24 @@ export const PixelGrid = ({
         const isHovered = hoveredPixel === pixelKey;
         const isSold = soldPixels.has(pixelKey);
 
-        let fillStyle = '#1f2937'; // Default gray-800
+        let fillStyle = '#f8f9fa'; // Light gray for available
 
         if (isSold) {
-          // Random colors for sold pixels to simulate ads
-          const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+          // Subtle colors for sold pixels
+          const colors = ['#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#fce4ec'];
           fillStyle = colors[((x * y) % colors.length)];
         } else if (isSelected) {
-          fillStyle = '#8b5cf6'; // Purple for selected
+          fillStyle = '#000000'; // Black for selected
         } else if (isHovered) {
-          fillStyle = '#4b5563'; // Lighter gray for hover
+          fillStyle = '#e5e7eb'; // Gray for hover
         }
 
         ctx.fillStyle = fillStyle;
         ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1, pixelSize - 1);
 
-        // Add subtle border for selected pixels
+        // Add border for selected pixels
         if (isSelected) {
-          ctx.strokeStyle = '#a855f7';
+          ctx.strokeStyle = '#000000';
           ctx.lineWidth = 1;
           ctx.strokeRect(x * pixelSize, y * pixelSize, pixelSize - 1, pixelSize - 1);
         }
@@ -127,7 +125,6 @@ export const PixelGrid = ({
     setHoveredPixel(pixel?.key || null);
 
     if (isSelecting && dragStart && pixel) {
-      // Multi-select rectangular area
       const newSelection = new Set<string>();
       const startX = Math.min(dragStart.x, pixel.x);
       const endX = Math.max(dragStart.x, pixel.x);
@@ -149,12 +146,11 @@ export const PixelGrid = ({
     const pixel = getPixelFromMouse(e);
     if (!pixel) return;
 
-    if (soldPixels.has(pixel.key)) return; // Can't select sold pixels
+    if (soldPixels.has(pixel.key)) return;
 
     setDragStart({ x: pixel.x, y: pixel.y });
     setIsSelecting(true);
 
-    // Single click selection
     if (!e.shiftKey) {
       const newSelection = new Set([pixel.key]);
       setSelectedPixels(newSelection);
@@ -175,39 +171,34 @@ export const PixelGrid = ({
   return (
     <div 
       ref={containerRef}
-      className="flex-1 flex items-center justify-center p-5 bg-gradient-to-br from-gray-950 to-gray-900"
+      className="flex-1 flex items-center justify-center p-4 bg-gray-50"
     >
       <div className="relative">
         <canvas
           ref={canvasRef}
           width={dimensions.width}
           height={dimensions.height}
-          className="border border-gray-800 rounded-lg shadow-2xl cursor-crosshair"
+          className="border border-gray-300 rounded-lg shadow-sm cursor-crosshair bg-white"
           onMouseMove={handleMouseMove}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
-          style={{
-            imageRendering: 'pixelated',
-            background: 'linear-gradient(45deg, #111827 25%, transparent 25%), linear-gradient(-45deg, #111827 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #111827 75%), linear-gradient(-45deg, transparent 75%, #111827 75%)',
-            backgroundSize: '20px 20px',
-            backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
-          }}
+          style={{ imageRendering: 'pixelated' }}
         />
         
         {/* Pixel info tooltip */}
         {hoveredPixel && (
-          <div className="absolute pointer-events-none bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm shadow-xl z-10"
+          <div className="absolute pointer-events-none bg-white border border-gray-200 rounded-lg p-3 text-sm shadow-lg z-10"
                style={{
                  left: Math.min(dimensions.width - 200, (parseInt(hoveredPixel.split(',')[0]) * pixelSize) + 20),
                  top: Math.max(20, (parseInt(hoveredPixel.split(',')[1]) * pixelSize) - 60)
                }}>
-            <div className="font-medium text-white">Pixel {hoveredPixel}</div>
-            <div className="text-gray-400 text-xs mt-1">
+            <div className="font-medium text-gray-900">Pixel {hoveredPixel}</div>
+            <div className="text-gray-500 text-xs mt-1">
               {soldPixels.has(hoveredPixel) ? 'Owned' : 'Available'}
             </div>
-            {soldPixels.has(hoveredPixel) && (
-              <div className="text-green-400 text-xs">💰 0.01 SOL</div>
+            {!soldPixels.has(hoveredPixel) && (
+              <div className="text-green-600 text-xs">💰 0.01 SOL</div>
             )}
           </div>
         )}

@@ -1,8 +1,9 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { PixelGrid } from "@/components/PixelGrid";
-import { StatsFooter } from "@/components/StatsFooter";
+import { StatsBar } from "@/components/StatsBar";
+import { SelectionPanel } from "@/components/SelectionPanel";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const Index = () => {
@@ -18,29 +19,35 @@ const Index = () => {
 
   return (
     <TooltipProvider>
-      <div className="h-screen w-full flex flex-col bg-gray-950 text-white overflow-hidden">
-        <Header 
-          selectedCount={selectedPixels.size}
-          onClearSelection={() => setSelectedPixels(new Set())}
-        />
+      <div className="h-screen w-full flex flex-col bg-white text-gray-900 overflow-hidden">
+        <Header />
         
-        <main className="flex-1 relative overflow-hidden">
-          <PixelGrid
-            selectedPixels={selectedPixels}
-            setSelectedPixels={setSelectedPixels}
-            hoveredPixel={hoveredPixel}
-            setHoveredPixel={setHoveredPixel}
-            gridData={gridData}
-            isSelecting={isSelecting}
-            setIsSelecting={setIsSelecting}
-          />
+        <main className="flex-1 flex">
+          <div className="flex-1 relative">
+            <PixelGrid
+              selectedPixels={selectedPixels}
+              setSelectedPixels={setSelectedPixels}
+              hoveredPixel={hoveredPixel}
+              setHoveredPixel={setHoveredPixel}
+              gridData={gridData}
+              isSelecting={isSelecting}
+              setIsSelecting={setIsSelecting}
+            />
+          </div>
+          
+          {selectedPixels.size > 0 && (
+            <SelectionPanel
+              selectedCount={selectedPixels.size}
+              floorPrice={floorPrice}
+              onClearSelection={() => setSelectedPixels(new Set())}
+            />
+          )}
         </main>
 
-        <StatsFooter 
+        <StatsBar 
           totalPixels={totalPixels}
           soldPixels={soldPixels}
           floorPrice={floorPrice}
-          selectedCount={selectedPixels.size}
         />
       </div>
     </TooltipProvider>
