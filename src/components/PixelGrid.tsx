@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { PixelGridLoading } from "./PixelGridLoading";
@@ -166,18 +165,15 @@ export const PixelGrid = ({
     setIsPanning(false);
   }, []);
 
-  // Touch handlers for mobile
-  const [lastTouchDistance, setLastTouchDistance] = useState(0);
-  const [lastTouchCenter, setLastTouchCenter] = useState({ x: 0, y: 0 });
-
-  const getTouchDistance = (touches: TouchList) => {
+  // Touch helper functions updated to work with React.TouchList
+  const getTouchDistance = (touches: React.TouchList) => {
     if (touches.length < 2) return 0;
     const dx = touches[0].clientX - touches[1].clientX;
     const dy = touches[0].clientY - touches[1].clientY;
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  const getTouchCenter = (touches: TouchList) => {
+  const getTouchCenter = (touches: React.TouchList) => {
     if (touches.length === 1) {
       return { x: touches[0].clientX, y: touches[0].clientY };
     }
@@ -185,6 +181,10 @@ export const PixelGrid = ({
     const y = (touches[0].clientY + touches[1].clientY) / 2;
     return { x, y };
   };
+
+  // Touch handlers for mobile
+  const [lastTouchDistance, setLastTouchDistance] = useState(0);
+  const [lastTouchCenter, setLastTouchCenter] = useState({ x: 0, y: 0 });
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
