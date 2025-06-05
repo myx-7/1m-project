@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface PixelTooltipProps {
   hoveredPixel: string;
@@ -17,43 +19,88 @@ export const PixelTooltip = ({
   zoom = 1
 }: PixelTooltipProps) => {
   const [x, y] = hoveredPixel.split(',').map(Number);
+  const isSold = soldPixels.has(hoveredPixel);
   
   // Calculate position with pan and zoom
   const pixelScreenX = x * pixelSize + pan.x;
   const pixelScreenY = y * pixelSize + pan.y;
   
-  // Position tooltip next to the pixel
-  const tooltipX = Math.min(dimensions.width - 240, Math.max(20, pixelScreenX + 20));
-  const tooltipY = Math.max(20, Math.min(dimensions.height - 120, pixelScreenY - 50));
+  // Smart positioning - show tooltip where there's space
+  const tooltipWidth = 200;
+  const tooltipHeight = 80;
+  const padding = 20;
+  
+  let tooltipX = pixelScreenX + pixelSize + 10; // Default: right of pixel
+  let tooltipY = pixelScreenY;
+  
+  // Adjust if tooltip would go off-screen
+  if (tooltipX + tooltipWidth > dimensions.width - padding) {
+    tooltipX = pixelScreenX - tooltipWidth - 10; // Show on left instead
+  }
+  
+  if (tooltipY + tooltipHeight > dimensions.height - padding) {
+    tooltipY = dimensions.height - tooltipHeight - padding;
+  }
+  
+  if (tooltipY < padding) {
+    tooltipY = padding;
+  }
   
   return (
     <div 
-      className="absolute pointer-events-none bg-card/95 backdrop-blur-sm border border-border rounded-xl p-4 text-sm shadow-2xl z-20 transition-all duration-200 animate-in fade-in-0 zoom-in-95 font-pixel"
+      className={cn(
+        "absolute pointer-events-none z-20",
+        "bg-background/95 backdrop-blur-xl",
+        "border border-border rounded-lg",
+        "px-3 py-2 shadow-xl",
+        "transition-all duration-200",
+        "animate-in fade-in-0 zoom-in-95"
+      )}
       style={{
-        left: tooltipX,
-        top: tooltipY
+        left: Math.max(padding, tooltipX),
+        top: tooltipY,
+        minWidth: tooltipWidth
       }}
     >
-      <div className="font-medium text-foreground flex items-center gap-2 text-xs">
-        <span className="text-lg animate-pulse">🎯</span>
-        Block #{hoveredPixel}
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <div className="flex items-center gap-2">
+          <div className={cn(
+            "w-4 h-4 rounded border",
+            isSold 
+              ? "bg-primary border-primary animate-pulse" 
+              : "bg-muted border-border"
+          )} />
+          <span className="font-semibold text-sm font-pixel">
+            #{x},{y}
+          </span>
       </div>
-      <div className="text-muted-foreground text-[10px] mt-2">
-        {soldPixels.has(hoveredPixel) ? '🔗 Already minted on-chain' : '✨ Ready to mint'}
+        <Badge 
+          variant={isSold ? "secondary" : "default"}
+          className={cn(
+            "text-[9px] font-pixel px-2 py-0",
+            isSold 
+              ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" 
+              : "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+          )}
+        >
+          {isSold ? "OWNED" : "AVAILABLE"}
+        </Badge>
       </div>
-      {!soldPixels.has(hoveredPixel) && (
-        <div className="text-green-600 dark:text-green-400 text-[10px] flex items-center gap-1 mt-2">
-          <span>💰</span> 0.01 SOL
-          <span className="ml-2">🚀</span>
+      
+      {/* Price or owner info */}
+      <div className="text-xs text-muted-foreground font-pixel">
+        {isSold ? (
+          <div className="flex items-center gap-1">
+            <span>Owner:</span>
+            <span className="text-foreground font-medium">anon...7x9f</span>
+        </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span>Price:</span>
+            <span className="text-foreground font-semibold">0.01 SOL</span>
         </div>
       )}
-      {soldPixels.has(hoveredPixel) && (
-        <div className="text-blue-600 dark:text-blue-400 text-[10px] flex items-center gap-1 mt-2">
-          <span>👑</span> Owned by anon
-        </div>
-      )}
-      <div className="text-[9px] text-muted-foreground mt-2 border-t border-border pt-2">
-        Zoom: {(zoom * 100).toFixed(0)}% • Use scroll to zoom • Ctrl+click to pan
       </div>
     </div>
   );
