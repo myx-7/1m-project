@@ -32,7 +32,7 @@ export const PixelGrid = ({
   const lastDrawParamsRef = useRef<string>("");
   
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [basePixelSize, setBasePixelSize] = useState(8);
+  const [basePixelSize, setBasePixelSize] = useState(6);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -40,14 +40,15 @@ export const PixelGrid = ({
   const [isLoading, setIsLoading] = useState(true);
   const { theme } = useTheme();
 
-  const gridWidth = 100;
-  const gridHeight = 100;
+  // Updated to 1000x1000 grid
+  const gridWidth = 1000;
+  const gridHeight = 1000;
   const soldPixels = useMemo(() => generateMockSoldPixels(), []);
   const pixelSize = basePixelSize * zoom;
 
-  // Loading animation effect
+  // Improved loading animation with better timing
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
+    const timer = setTimeout(() => setIsLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
 
@@ -56,13 +57,13 @@ export const PixelGrid = ({
       const rect = containerRef.current.getBoundingClientRect();
       const newBasePixelSize = calculatePixelSize(rect.width, rect.height, gridWidth, gridHeight);
       
-      setBasePixelSize(newBasePixelSize);
+      setBasePixelSize(Math.max(3, newBasePixelSize)); // Minimum 3px for better visibility
       setDimensions({
         width: rect.width,
         height: rect.height
       });
     }
-  }, []);
+  }, [gridWidth, gridHeight]);
 
   useEffect(() => {
     updateDimensions();
@@ -82,26 +83,33 @@ export const PixelGrid = ({
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // Check if we need to redraw (performance optimization)
+      // Performance optimization - only redraw if something changed
       const drawParams = JSON.stringify({
-        pixelSize,
-        selectedPixels: Array.from(selectedPixels).sort(),
+        pixelSize: Math.round(pixelSize * 100) / 100,
+        selectedCount: selectedPixels.size,
         hoveredPixel,
         theme,
-        pan,
-        zoom,
+        pan: { x: Math.round(pan.x), y: Math.round(pan.y) },
+        zoom: Math.round(zoom * 100) / 100,
         dimensions
       });
 
       if (lastDrawParamsRef.current === drawParams) {
-        return; // Skip redraw if nothing changed
+        return;
       }
       lastDrawParamsRef.current = drawParams;
 
-      // Set canvas size only when needed
-      if (canvas.width !== dimensions.width || canvas.height !== dimensions.height) {
-        canvas.width = dimensions.width;
-        canvas.height = dimensions.height;
+      // Set canvas size efficiently
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      const displayWidth = dimensions.width;
+      const displayHeight = dimensions.height;
+      
+      if (canvas.width !== displayWidth * devicePixelRatio || canvas.height !== displayHeight * devicePixelRatio) {
+        canvas.width = displayWidth * devicePixelRatio;
+        canvas.height = displayHeight * devicePixelRatio;
+        canvas.style.width = displayWidth + 'px';
+        canvas.style.height = displayHeight + 'px';
+        ctx.scale(devicePixelRatio, devicePixelRatio);
       }
 
       drawPixelGrid(ctx, canvas, {
@@ -117,7 +125,7 @@ export const PixelGrid = ({
         containerDimensions: dimensions
       });
     });
-  }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, theme, pan, zoom, dimensions]);
+  }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, theme, pan, zoom, dimensions, gridWidth, gridHeight]);
 
   useEffect(() => {
     if (!isLoading && dimensions.width > 0 && dimensions.height > 0) {
@@ -125,7 +133,7 @@ export const PixelGrid = ({
     }
   }, [drawGrid, isLoading, dimensions]);
 
-  // Center the grid when it loads (only once)
+  // Smart centering - center grid when it loads
   useEffect(() => {
     if (!isLoading && dimensions.width > 0 && dimensions.height > 0 && pan.x === 0 && pan.y === 0) {
       const totalGridWidth = gridWidth * pixelSize;
@@ -136,7 +144,7 @@ export const PixelGrid = ({
       
       setPan({ x: centerX, y: centerY });
     }
-  }, [isLoading, dimensions, pixelSize, pan.x, pan.y]);
+  }, [isLoading, dimensions, pixelSize, pan.x, pan.y, gridWidth, gridHeight]);
 
   // Cleanup animation frame on unmount
   useEffect(() => {
@@ -147,11 +155,11 @@ export const PixelGrid = ({
     };
   }, []);
 
-  // Zoom handlers
+  // Improved zoom with better constraints
   const handleZoom = useCallback((delta: number, centerX?: number, centerY?: number) => {
-    const zoomSpeed = 0.1;
-    const minZoom = 0.5;
-    const maxZoom = 10;
+    const zoomSpeed = 0.15;
+    const minZoom = 0.1;
+    const maxZoom = 20;
     
     const newZoom = Math.max(minZoom, Math.min(maxZoom, zoom + delta * zoomSpeed));
     
@@ -314,17 +322,17 @@ export const PixelGrid = ({
   return (
     <div 
       ref={containerRef}
-      className="w-full h-full relative bg-background overflow-hidden"
+      className="w-full h-full relative bg-gradient-to-br from-background via-background to-muted/20 overflow-hidden"
     >
       {isLoading ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-background">
-          <PixelGridLoading width={400} height={300} />
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
+          <PixelGridLoading width={500} height={400} />
         </div>
       ) : (
         <>
           <canvas
             ref={canvasRef}
-            className="absolute inset-0 w-full h-full block"
+            className="absolute inset-0 w-full h-full block border border-border/20 rounded-lg shadow-2xl"
             style={{ 
               imageRendering: 'pixelated',
               cursor: isPanning ? 'grabbing' : 'crosshair',

@@ -44,21 +44,44 @@ export const calculatePixelSize = (
   gridWidth: number,
   gridHeight: number
 ) => {
-  const maxWidth = containerWidth - 10;
-  const maxHeight = containerHeight - 10;
+  const maxWidth = containerWidth - 40; // More padding for better UX
+  const maxHeight = containerHeight - 40;
   
   const maxPixelWidth = Math.floor(maxWidth / gridWidth);
   const maxPixelHeight = Math.floor(maxHeight / gridHeight);
-  return Math.max(4, Math.min(maxPixelWidth, maxPixelHeight, 20));
+  return Math.max(2, Math.min(maxPixelWidth, maxPixelHeight, 15)); // Adjusted for 1000x1000
 };
 
 export const generateMockSoldPixels = () => {
-  return new Set([
-    "10,10", "11,10", "12,10", "13,10", "14,10", "15,10",
-    "25,25", "26,25", "25,26", "26,26", "27,25", "27,26",
-    "50,50", "51,50", "52,50", "50,51", "51,51", "52,51", "53,51", "53,50",
-    "75,30", "76,30", "77,30", "75,31", "76,31", "77,31",
-    "20,70", "21,70", "22,70", "20,71", "21,71", "22,71",
-    "80,80", "81,80", "82,80", "80,81", "81,81", "82,81"
-  ]);
+  // Enhanced mock data for 1000x1000 grid with more interesting patterns
+  const pixels = new Set<string>();
+  
+  // Add some scattered patterns across the larger grid
+  for (let i = 0; i < 50; i++) {
+    const x = Math.floor(Math.random() * 1000);
+    const y = Math.floor(Math.random() * 1000);
+    // Create small clusters
+    for (let dx = 0; dx < 3; dx++) {
+      for (let dy = 0; dy < 3; dy++) {
+        if (x + dx < 1000 && y + dy < 1000) {
+          pixels.add(`${x + dx},${y + dy}`);
+        }
+      }
+    }
+  }
+  
+  // Add some specific patterns for visual appeal
+  const patterns = [
+    [100, 100], [500, 500], [750, 250], [200, 800], [850, 150]
+  ];
+  
+  patterns.forEach(([startX, startY]) => {
+    for (let x = startX; x < startX + 20 && x < 1000; x++) {
+      for (let y = startY; y < startY + 20 && y < 1000; y++) {
+        pixels.add(`${x},${y}`);
+      }
+    }
+  });
+  
+  return pixels;
 };

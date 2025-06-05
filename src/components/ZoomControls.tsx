@@ -12,52 +12,54 @@ interface ZoomControlsProps {
 
 export const ZoomControls = ({ zoom, onZoomIn, onZoomOut, onReset, onCenter }: ZoomControlsProps) => {
   return (
-    <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-      <div className="bg-card/90 backdrop-blur-sm border border-border rounded-xl p-2 shadow-lg">
-        <div className="flex flex-col gap-1">
+    <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
+      <div className="bg-card/95 backdrop-blur-md border border-border/50 rounded-2xl p-3 shadow-2xl">
+        <div className="flex flex-col gap-2">
           <Button
             size="sm"
             variant="ghost"
             onClick={onZoomIn}
-            className="h-8 w-8 p-0 hover:bg-muted/80"
-            disabled={zoom >= 10}
+            className="h-10 w-10 p-0 hover:bg-muted/80 transition-all duration-200 hover:scale-105"
+            disabled={zoom >= 20}
           >
-            <ZoomIn className="w-4 h-4" />
+            <ZoomIn className="w-5 h-5" />
           </Button>
           
           <Button
             size="sm"
             variant="ghost"
             onClick={onZoomOut}
-            className="h-8 w-8 p-0 hover:bg-muted/80"
-            disabled={zoom <= 0.5}
+            className="h-10 w-10 p-0 hover:bg-muted/80 transition-all duration-200 hover:scale-105"
+            disabled={zoom <= 0.1}
           >
-            <ZoomOut className="w-4 h-4" />
+            <ZoomOut className="w-5 h-5" />
           </Button>
           
-          <div className="h-px bg-border my-1" />
+          <div className="h-px bg-border/50 my-1" />
           
           <Button
             size="sm"
             variant="ghost"
             onClick={onCenter}
-            className="h-8 w-8 p-0 hover:bg-muted/80"
+            className="h-10 w-10 p-0 hover:bg-muted/80 transition-all duration-200 hover:scale-105"
+            title="Center Grid"
           >
-            <Target className="w-4 h-4" />
+            <Target className="w-5 h-5" />
           </Button>
           
           <Button
             size="sm"
             variant="ghost"
             onClick={onReset}
-            className="h-8 w-8 p-0 hover:bg-muted/80"
+            className="h-10 w-10 p-0 hover:bg-muted/80 transition-all duration-200 hover:scale-105"
+            title="Reset View"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-5 h-5" />
           </Button>
         </div>
       </div>
       
-      <div className="bg-card/90 backdrop-blur-sm border border-border rounded-lg px-2 py-1 text-xs font-pixel">
+      <div className="bg-card/95 backdrop-blur-md border border-border/50 rounded-xl px-4 py-2 text-sm font-semibold text-foreground/80 shadow-lg">
         {(zoom * 100).toFixed(0)}%
       </div>
     </div>
