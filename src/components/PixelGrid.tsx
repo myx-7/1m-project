@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { PixelGridLoading } from "./PixelGridLoading";
@@ -43,7 +42,7 @@ export const PixelGrid = ({
   const soldPixels = generateMockSoldPixels();
   const pixelSize = basePixelSize * zoom;
 
-  // Loading animation effect with meme flair
+  // Loading animation effect
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
@@ -52,7 +51,10 @@ export const PixelGrid = ({
   const updateDimensions = useCallback(() => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
+      console.log('Container dimensions:', rect.width, rect.height);
+      
       const newBasePixelSize = calculatePixelSize(rect.width, rect.height, gridWidth, gridHeight);
+      console.log('Calculated pixel size:', newBasePixelSize);
       
       setBasePixelSize(newBasePixelSize);
       setDimensions({
@@ -70,22 +72,34 @@ export const PixelGrid = ({
 
   const drawGrid = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.log('Canvas ref not available');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.log('Canvas context not available');
+      return;
+    }
 
     // Set canvas size to container size
     canvas.width = dimensions.width;
     canvas.height = dimensions.height;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Set background color based on theme
+    console.log('Canvas size set to:', canvas.width, canvas.height);
+    console.log('Pixel size:', pixelSize, 'Pan:', pan, 'Zoom:', zoom);
+
+    // Clear canvas with a visible background
     const isDark = theme === 'dark';
-    ctx.fillStyle = isDark ? '#0a0a0a' : '#ffffff';
+    ctx.fillStyle = isDark ? '#1a1a1a' : '#f8f8f8';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw a test rectangle to verify canvas is working
+    ctx.fillStyle = isDark ? '#333' : '#ddd';
+    ctx.fillRect(10, 10, 50, 50);
+    ctx.fillStyle = isDark ? '#fff' : '#000';
+    ctx.fillText('TEST', 15, 30);
 
     drawPixelGrid(ctx, canvas, {
       gridWidth,
@@ -102,10 +116,25 @@ export const PixelGrid = ({
   }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, theme, pan, zoom, dimensions]);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && dimensions.width > 0 && dimensions.height > 0) {
+      console.log('Drawing grid with dimensions:', dimensions);
       drawGrid();
     }
-  }, [drawGrid, isLoading]);
+  }, [drawGrid, isLoading, dimensions]);
+
+  // Center the grid when it loads
+  useEffect(() => {
+    if (!isLoading && dimensions.width > 0 && dimensions.height > 0) {
+      const totalGridWidth = gridWidth * pixelSize;
+      const totalGridHeight = gridHeight * pixelSize;
+      
+      const centerX = (dimensions.width - totalGridWidth) / 2;
+      const centerY = (dimensions.height - totalGridHeight) / 2;
+      
+      console.log('Centering grid:', centerX, centerY);
+      setPan({ x: centerX, y: centerY });
+    }
+  }, [isLoading, dimensions, pixelSize]);
 
   // Zoom handlers
   const handleZoom = useCallback((delta: number, centerX?: number, centerY?: number) => {
@@ -116,7 +145,6 @@ export const PixelGrid = ({
     const newZoom = Math.max(minZoom, Math.min(maxZoom, zoom + delta * zoomSpeed));
     
     if (centerX !== undefined && centerY !== undefined) {
-      // Zoom towards point
       const zoomRatio = newZoom / zoom;
       setPan(prev => ({
         x: centerX - (centerX - prev.x) * zoomRatio,
@@ -140,7 +168,7 @@ export const PixelGrid = ({
 
   // Pan handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button === 1 || e.ctrlKey || e.metaKey) { // Middle mouse or Ctrl+click for panning
+    if (e.button === 1 || e.ctrlKey || e.metaKey) {
       setIsPanning(true);
       setLastPanPoint({ x: e.clientX, y: e.clientY });
       e.preventDefault();
@@ -204,7 +232,6 @@ export const PixelGrid = ({
     e.preventDefault();
     
     if (e.touches.length === 2) {
-      // Pinch to zoom
       const distance = getTouchDistance(e.touches);
       const center = getTouchCenter(e.touches);
       
@@ -221,7 +248,6 @@ export const PixelGrid = ({
       setLastTouchDistance(distance);
       setLastTouchCenter(center);
     } else if (e.touches.length === 1 && isPanning) {
-      // Pan
       const deltaX = e.touches[0].clientX - lastPanPoint.x;
       const deltaY = e.touches[0].clientY - lastPanPoint.y;
       
@@ -255,8 +281,12 @@ export const PixelGrid = ({
 
   const resetView = useCallback(() => {
     setZoom(1);
-    setPan({ x: 0, y: 0 });
-  }, []);
+    const totalGridWidth = gridWidth * basePixelSize;
+    const totalGridHeight = gridHeight * basePixelSize;
+    const centerX = (dimensions.width - totalGridWidth) / 2;
+    const centerY = (dimensions.height - totalGridHeight) / 2;
+    setPan({ x: centerX, y: centerY });
+  }, [dimensions, gridWidth, gridHeight, basePixelSize]);
 
   const centerGrid = useCallback(() => {
     if (dimensions.width === 0 || dimensions.height === 0) return;
@@ -270,28 +300,24 @@ export const PixelGrid = ({
     setPan({ x: centerX, y: centerY });
   }, [dimensions, gridWidth, gridHeight, pixelSize]);
 
-  // Center the grid when dimensions or pixel size changes
-  useEffect(() => {
-    if (dimensions.width > 0 && dimensions.height > 0) {
-      centerGrid();
-    }
-  }, [centerGrid, dimensions.width, dimensions.height]);
-
   return (
     <div 
       ref={containerRef}
       className="flex-1 relative overflow-hidden bg-background transition-colors duration-300"
+      style={{ minHeight: '400px' }}
     >
       {isLoading ? (
-        <PixelGridLoading width={dimensions.width} height={dimensions.height} />
+        <PixelGridLoading width={dimensions.width || 800} height={dimensions.height || 600} />
       ) : (
         <>
           <canvas
             ref={canvasRef}
-            className="absolute inset-0 cursor-crosshair"
+            className="absolute inset-0"
             style={{ 
               imageRendering: 'pixelated',
-              cursor: isPanning ? 'grabbing' : 'crosshair'
+              cursor: isPanning ? 'grabbing' : 'crosshair',
+              width: '100%',
+              height: '100%'
             }}
             onWheel={handleWheel}
             onMouseMove={(e) => {
