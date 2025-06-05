@@ -1,7 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Zap, Grid3X3, Users } from "lucide-react";
+import { TrendingUp, Zap, Grid3X3, Users, Heart } from "lucide-react";
 
 interface StatsFooterProps {
   totalPixels: number;
@@ -10,7 +10,7 @@ interface StatsFooterProps {
   selectedCount: number;
 }
 
-export const StatsFooter = ({ totalPixels, soldPixels, floorPrice, selectedCount }: StatsFooterProps) => {
+export const StatsFooter = ({ totalPixels, soldPixels, selectedCount }: Omit<StatsFooterProps, 'floorPrice'>) => {
   const percentageSold = (soldPixels / totalPixels) * 100;
 
   return (
@@ -20,24 +20,24 @@ export const StatsFooter = ({ totalPixels, soldPixels, floorPrice, selectedCount
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 text-sm">
             <Grid3X3 className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-400">Grid:</span>
+            <span className="text-gray-400">Duvar:</span>
             <span className="text-white font-medium">
               {soldPixels.toLocaleString()} / {totalPixels.toLocaleString()}
             </span>
-            <Badge variant="secondary" className="bg-green-500/10 border-green-500/30 text-green-300 text-xs">
-              {percentageSold.toFixed(1)}% sold
+            <Badge variant="secondary" className="bg-purple-500/10 border-purple-500/30 text-purple-300 text-xs">
+              {percentageSold.toFixed(1)}% dolu
             </Badge>
           </div>
 
           <div className="flex items-center gap-2 text-sm">
-            <TrendingUp className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-400">Floor:</span>
-            <span className="text-white font-medium">{floorPrice} SOL</span>
+            <Heart className="w-4 h-4 text-red-400" />
+            <span className="text-gray-400">Hatıralar:</span>
+            <span className="text-white font-medium">{soldPixels}</span>
           </div>
 
           <div className="flex items-center gap-2 text-sm">
             <Users className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-400">Owners:</span>
+            <span className="text-gray-400">Katılımcı:</span>
             <span className="text-white font-medium">156</span>
           </div>
         </div>
@@ -57,19 +57,19 @@ export const StatsFooter = ({ totalPixels, soldPixels, floorPrice, selectedCount
           {selectedCount > 0 ? (
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-400">
-                Total: <span className="text-white font-medium">{(selectedCount * floorPrice).toFixed(3)} SOL</span>
+                <span className="text-white font-medium">{selectedCount}</span> alan seçildi
               </div>
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
               >
-                <Zap className="w-4 h-4 mr-2" />
-                Mint Now
+                <Heart className="w-4 h-4 mr-2" />
+                Hatıra Bırak
               </Button>
             </div>
           ) : (
             <div className="text-sm text-gray-400">
-              Select pixels to mint
+              Hatıra bırakmak için alan seç ✨
             </div>
           )}
         </div>

@@ -14,10 +14,9 @@ const Index = () => {
   const [gridData, setGridData] = useState<Record<string, any>>({});
   const [isSelecting, setIsSelecting] = useState(false);
 
-  // Mock data for demonstration
+  // Mock data for demonstration - updated for memory theme
   const totalPixels = 10000; // 100x100 grid
   const soldPixels = 234;
-  const floorPrice = 0.01;
 
   return (
     <ThemeProvider>
@@ -45,7 +44,6 @@ const Index = () => {
                 <div className="flex-1">
                   <SelectionPanel
                     selectedCount={selectedPixels.size}
-                    floorPrice={floorPrice}
                     onClearSelection={() => setSelectedPixels(new Set())}
                   />
                 </div>
@@ -62,7 +60,6 @@ const Index = () => {
             <div className="lg:hidden border-t border-border bg-muted/30">
               <SelectionPanel
                 selectedCount={selectedPixels.size}
-                floorPrice={floorPrice}
                 onClearSelection={() => setSelectedPixels(new Set())}
               />
             </div>
@@ -71,7 +68,6 @@ const Index = () => {
           <StatsBar 
             totalPixels={totalPixels}
             soldPixels={soldPixels}
-            floorPrice={floorPrice}
           />
         </div>
       </TooltipProvider>

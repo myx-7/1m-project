@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, Zap, Blocks } from "lucide-react";
+import { X, Heart, Blocks, Sparkles } from "lucide-react";
 
 interface SelectionPanelProps {
   selectedCount: number;
@@ -9,9 +9,7 @@ interface SelectionPanelProps {
   onClearSelection: () => void;
 }
 
-export const SelectionPanel = ({ selectedCount, floorPrice, onClearSelection }: SelectionPanelProps) => {
-  const totalPrice = selectedCount * floorPrice;
-
+export const SelectionPanel = ({ selectedCount, onClearSelection }: Omit<SelectionPanelProps, 'floorPrice'>) => {
   return (
     <div className="w-80 border-l border-border bg-muted/30 p-4 hidden lg:block transition-colors duration-300">
       <Card className="border-0 shadow-sm bg-card transition-all duration-300 hover:shadow-md">
@@ -19,7 +17,7 @@ export const SelectionPanel = ({ selectedCount, floorPrice, onClearSelection }: 
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2 font-pixel">
               <Blocks className="w-4 h-4 text-primary" />
-              Selection
+              Seçim
             </CardTitle>
             <Button
               size="sm"
@@ -34,17 +32,17 @@ export const SelectionPanel = ({ selectedCount, floorPrice, onClearSelection }: 
         <CardContent className="space-y-4">
           <div className="space-y-3">
             <div className="flex justify-between text-xs font-pixel">
-              <span className="text-muted-foreground">Blocks selected</span>
-              <span className="font-medium text-foreground">{selectedCount}</span>
+              <span className="text-muted-foreground">Seçilen alan</span>
+              <span className="font-medium text-foreground">{selectedCount} piksel</span>
             </div>
             <div className="flex justify-between text-xs font-pixel">
-              <span className="text-muted-foreground">Price per block</span>
-              <span className="font-medium text-foreground">{floorPrice} SOL</span>
+              <span className="text-muted-foreground">Hatıra türü</span>
+              <span className="font-medium text-foreground">Özel mesaj</span>
             </div>
             <div className="border-t border-border pt-3">
               <div className="flex justify-between font-pixel">
-                <span className="font-medium text-foreground text-xs">Total</span>
-                <span className="font-semibold text-foreground text-sm">{totalPrice.toFixed(3)} SOL</span>
+                <span className="font-medium text-foreground text-xs">Durum</span>
+                <span className="font-semibold text-green-600 text-sm">Hazır ✨</span>
               </div>
             </div>
           </div>
@@ -53,13 +51,16 @@ export const SelectionPanel = ({ selectedCount, floorPrice, onClearSelection }: 
             className="w-full bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 hover:scale-[1.02] group font-pixel text-xs"
             size="lg"
           >
-            <Zap className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-            Mint {selectedCount} block{selectedCount !== 1 ? 's' : ''} 🚀
+            <Heart className="w-4 h-4 mr-2 group-hover:animate-pulse" />
+            {selectedCount} piksel için hatıra bırak 💫
           </Button>
 
           <div className="text-[10px] text-muted-foreground text-center space-y-1 font-pixel">
-            <p>Each block becomes an NFT that you own forever</p>
-            <p className="text-primary">🔗 Secured on Solana blockchain</p>
+            <p>Her piksel bir hatıra, sonsuza kadar burada kalacak</p>
+            <p className="text-primary flex items-center justify-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Dijital hatıra duvarı
+            </p>
           </div>
         </CardContent>
       </Card>
