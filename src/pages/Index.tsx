@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { PixelGrid } from "@/components/PixelGrid";
 import { StatsBar } from "@/components/StatsBar";
 import { SelectionPanel } from "@/components/SelectionPanel";
+import { PublicChat } from "@/components/PublicChat";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
@@ -24,8 +25,9 @@ const Index = () => {
         <div className="h-screen w-full flex flex-col bg-background text-foreground overflow-hidden transition-colors duration-300">
           <Header />
           
-          <main className="flex-1 flex">
-            <div className="flex-1 relative">
+          <main className="flex-1 flex min-h-0">
+            {/* Canvas Area - Takes maximum space */}
+            <div className="flex-1 relative min-w-0">
               <PixelGrid
                 selectedPixels={selectedPixels}
                 setSelectedPixels={setSelectedPixels}
@@ -37,13 +39,22 @@ const Index = () => {
               />
             </div>
             
-            {selectedPixels.size > 0 && (
-              <SelectionPanel
-                selectedCount={selectedPixels.size}
-                floorPrice={floorPrice}
-                onClearSelection={() => setSelectedPixels(new Set())}
-              />
-            )}
+            {/* Right Sidebar - Selection Panel or Chat */}
+            <div className="hidden lg:flex flex-col w-80 border-l border-border bg-muted/30">
+              {selectedPixels.size > 0 ? (
+                <div className="flex-1">
+                  <SelectionPanel
+                    selectedCount={selectedPixels.size}
+                    floorPrice={floorPrice}
+                    onClearSelection={() => setSelectedPixels(new Set())}
+                  />
+                </div>
+              ) : (
+                <div className="flex-1 p-4">
+                  <PublicChat />
+                </div>
+              )}
+            </div>
           </main>
 
           <StatsBar 
