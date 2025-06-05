@@ -31,7 +31,7 @@ export const PixelGrid = ({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [basePixelSize, setBasePixelSize] = useState(8);
   const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [pan, setPan] = useState({ x: 50, y: 50 }); // Start with small offset
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -42,24 +42,23 @@ export const PixelGrid = ({
   const soldPixels = generateMockSoldPixels();
   const pixelSize = basePixelSize * zoom;
 
-  console.log('PixelGrid render - dimensions:', dimensions, 'isLoading:', isLoading, 'canvas:', canvasRef.current);
+  console.log('PixelGrid render - dimensions:', dimensions, 'pixelSize:', pixelSize, 'pan:', pan);
 
-  // Loading animation effect with meme flair
+  // Loading animation effect
   useEffect(() => {
-    console.log('Setting loading timer...');
     const timer = setTimeout(() => {
-      console.log('Loading finished!');
       setIsLoading(false);
-    }, 800);
+    }, 500); // Reduced loading time
     return () => clearTimeout(timer);
   }, []);
 
   const updateDimensions = useCallback(() => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
-      const newBasePixelSize = calculatePixelSize(rect.width, rect.height, gridWidth, gridHeight);
+      const newBasePixelSize = Math.max(6, Math.min(12, Math.floor(rect.width / gridWidth)));
       
-      console.log('Updating dimensions:', rect.width, 'x', rect.height, 'pixelSize:', newBasePixelSize);
+      console.log('Container dimensions:', rect.width, 'x', rect.height);
+      console.log('Calculated pixelSize:', newBasePixelSize);
       
       setBasePixelSize(newBasePixelSize);
       setDimensions({
@@ -70,7 +69,6 @@ export const PixelGrid = ({
   }, []);
 
   useEffect(() => {
-    console.log('Setting up resize listeners...');
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
@@ -78,31 +76,25 @@ export const PixelGrid = ({
 
   const drawGrid = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.log('No canvas ref available');
+    if (!canvas || dimensions.width === 0 || dimensions.height === 0) {
+      console.log('Canvas not ready:', !!canvas, dimensions);
       return;
     }
+
+    console.log('Drawing grid - canvas:', canvas.width, 'x', canvas.height, 'pan:', pan, 'pixelSize:', pixelSize);
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      console.log('No canvas context available');
+      console.log('No canvas context');
       return;
     }
 
-    console.log('Drawing grid with dimensions:', dimensions, 'pixelSize:', pixelSize, 'canvas size:', canvas.width, 'x', canvas.height, 'pan:', pan);
-
-    // Set canvas size to container size
-    canvas.width = dimensions.width;
-    canvas.height = dimensions.height;
-
-    // Clear canvas with background
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = theme === 'dark' ? '#0f0f23' : '#fefefe';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Apply transformations
-    ctx.save();
-    ctx.translate(pan.x, pan.y);
+    // Ensure canvas has the right dimensions
+    if (canvas.width !== dimensions.width || canvas.height !== dimensions.height) {
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
+      console.log('Updated canvas size to:', canvas.width, 'x', canvas.height);
+    }
 
     drawPixelGrid(ctx, canvas, {
       gridWidth,
@@ -116,15 +108,11 @@ export const PixelGrid = ({
       zoom,
       containerDimensions: dimensions
     });
-
-    ctx.restore();
-    console.log('Grid drawing completed - canvas visible:', canvas.offsetWidth, 'x', canvas.offsetHeight);
   }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, theme, pan, zoom, dimensions]);
 
   useEffect(() => {
-    console.log('Drawing effect triggered - isLoading:', isLoading, 'dimensions:', dimensions);
     if (!isLoading && dimensions.width > 0 && dimensions.height > 0) {
-      console.log('Calling drawGrid...');
+      console.log('Triggering grid draw...');
       drawGrid();
     }
   }, [drawGrid, isLoading, dimensions]);
@@ -138,7 +126,6 @@ export const PixelGrid = ({
     const newZoom = Math.max(minZoom, Math.min(maxZoom, zoom + delta * zoomSpeed));
     
     if (centerX !== undefined && centerY !== undefined) {
-      // Zoom towards point
       const zoomRatio = newZoom / zoom;
       setPan(prev => ({
         x: centerX - (centerX - prev.x) * zoomRatio,
@@ -162,7 +149,7 @@ export const PixelGrid = ({
 
   // Pan handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button === 1 || e.ctrlKey || e.metaKey) { // Middle mouse or Ctrl+click for panning
+    if (e.button === 1 || e.ctrlKey || e.metaKey) {
       setIsPanning(true);
       setLastPanPoint({ x: e.clientX, y: e.clientY });
       e.preventDefault();
@@ -226,7 +213,6 @@ export const PixelGrid = ({
     e.preventDefault();
     
     if (e.touches.length === 2) {
-      // Pinch to zoom
       const distance = getTouchDistance(e.touches);
       const center = getTouchCenter(e.touches);
       
@@ -243,7 +229,6 @@ export const PixelGrid = ({
       setLastTouchDistance(distance);
       setLastTouchCenter(center);
     } else if (e.touches.length === 1 && isPanning) {
-      // Pan
       const deltaX = e.touches[0].clientX - lastPanPoint.x;
       const deltaY = e.touches[0].clientY - lastPanPoint.y;
       
@@ -277,22 +262,18 @@ export const PixelGrid = ({
 
   const resetView = useCallback(() => {
     setZoom(1);
-    setPan({ x: 0, y: 0 });
+    setPan({ x: 50, y: 50 });
   }, []);
 
   const centerGrid = useCallback(() => {
-    if (dimensions.width === 0 || dimensions.height === 0) {
-      console.log('Cannot center grid - dimensions not ready:', dimensions);
-      return;
-    }
+    if (dimensions.width === 0 || dimensions.height === 0) return;
     
-    // Calculate center position to show grid in the middle of the canvas
     const totalGridWidth = gridWidth * basePixelSize;
     const totalGridHeight = gridHeight * basePixelSize;
     const centerX = (dimensions.width - totalGridWidth) / 2;
     const centerY = (dimensions.height - totalGridHeight) / 2;
     
-    console.log('Centering grid at:', centerX, centerY, 'total grid size:', totalGridWidth, 'x', totalGridHeight);
+    console.log('Centering grid at:', centerX, centerY);
     setPan({ x: centerX, y: centerY });
   }, [dimensions, gridWidth, gridHeight, basePixelSize]);
 
@@ -317,11 +298,10 @@ export const PixelGrid = ({
             ref={canvasRef}
             width={dimensions.width}
             height={dimensions.height}
-            className="absolute inset-0 cursor-crosshair bg-card block"
+            className="absolute inset-0 cursor-crosshair block border border-red-500"
             style={{ 
               imageRendering: 'pixelated',
               cursor: isPanning ? 'grabbing' : 'crosshair',
-              display: 'block',
               width: dimensions.width,
               height: dimensions.height
             }}

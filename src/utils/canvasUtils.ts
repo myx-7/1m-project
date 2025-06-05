@@ -26,46 +26,68 @@ export const drawPixelGrid = (
     containerDimensions?: { width: number; height: number };
   }
 ) => {
-  // Enhanced theme-aware colors with more vibrant web3/meme colors
+  // Clear the entire canvas first
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Set a visible background color based on theme
   const isDark = theme === 'dark';
-  const availableColor = isDark ? '#0f0f23' : '#fefefe';
-  const hoveredColor = isDark ? '#1a1a3a' : '#f8f8f8';
+  const backgroundColor = isDark ? '#1a1a2e' : '#f0f0f0';
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Enhanced theme-aware colors
+  const availableColor = isDark ? '#2d2d44' : '#ffffff';
+  const hoveredColor = isDark ? '#3a3a5a' : '#f8f8f8';
   const selectedColor = isDark ? '#ffffff' : '#000000';
-  const borderColor = isDark ? '#2a2a3a' : '#e8e8e8';
+  const borderColor = isDark ? '#4a4a6a' : '#e0e0e0';
 
-  // Fixed visible area calculation - always render a reasonable range
-  const visibleStartX = Math.max(0, Math.floor(-pan.x / pixelSize) - 5);
-  const visibleEndX = Math.min(gridWidth, Math.floor((canvas.width - pan.x) / pixelSize) + 5);
-  const visibleStartY = Math.max(0, Math.floor(-pan.y / pixelSize) - 5);
-  const visibleEndY = Math.min(gridHeight, Math.floor((canvas.height - pan.y) / pixelSize) + 5);
+  // Always render a reasonable portion of the grid
+  const startX = Math.max(0, Math.floor(-pan.x / pixelSize));
+  const endX = Math.min(gridWidth, Math.floor((canvas.width - pan.x) / pixelSize) + 1);
+  const startY = Math.max(0, Math.floor(-pan.y / pixelSize));
+  const endY = Math.min(gridHeight, Math.floor((canvas.height - pan.y) / pixelSize) + 1);
 
-  console.log('Rendering pixels from', visibleStartX, ',', visibleStartY, 'to', visibleEndX, ',', visibleEndY, 'with pan:', pan);
+  console.log('Canvas size:', canvas.width, 'x', canvas.height);
+  console.log('Pan:', pan, 'PixelSize:', pixelSize);
+  console.log('Rendering from', startX, startY, 'to', endX, endY);
 
-  // Fallback: if no visible area, render center portion
-  let startX = visibleStartX, endX = visibleEndX, startY = visibleStartY, endY = visibleEndY;
-  if (startX >= endX || startY >= endY) {
-    console.log('No visible area calculated, rendering center portion');
-    startX = Math.max(0, Math.floor(gridWidth / 2) - 20);
-    endX = Math.min(gridWidth, Math.floor(gridWidth / 2) + 20);
-    startY = Math.max(0, Math.floor(gridHeight / 2) - 20);
-    endY = Math.min(gridHeight, Math.floor(gridHeight / 2) + 20);
+  // Fallback: ensure we always render something visible
+  let renderStartX = startX, renderEndX = endX, renderStartY = startY, renderEndY = endY;
+  if (renderStartX >= renderEndX || renderStartY >= renderEndY) {
+    console.log('No visible area, using fallback rendering');
+    renderStartX = 0;
+    renderEndX = Math.min(50, gridWidth);
+    renderStartY = 0;
+    renderEndY = Math.min(50, gridHeight);
   }
 
-  // Draw blocks with enhanced playful animations and colors
-  for (let x = startX; x < endX; x++) {
-    for (let y = startY; y < endY; y++) {
+  let pixelsRendered = 0;
+
+  // Draw pixels
+  for (let x = renderStartX; x < renderEndX; x++) {
+    for (let y = renderStartY; y < renderEndY; y++) {
       const pixelKey = `${x},${y}`;
       const isSelected = selectedPixels.has(pixelKey);
       const isHovered = hoveredPixel === pixelKey;
       const isSold = soldPixels.has(pixelKey);
 
+      // Calculate pixel position
+      const pixelX = pan.x + (x * pixelSize);
+      const pixelY = pan.y + (y * pixelSize);
+
+      // Skip pixels that are completely outside canvas
+      if (pixelX + pixelSize < 0 || pixelX > canvas.width || 
+          pixelY + pixelSize < 0 || pixelY > canvas.height) {
+        continue;
+      }
+
       let fillStyle = availableColor;
 
       if (isSold) {
-        // Enhanced meme/web3 colors with better vibrancy
+        // Colorful sold pixels
         const colors = isDark 
-          ? ['#ff4757', '#3742fa', '#2ed573', '#ffa502', '#ff6348', '#747d8c', '#5f27cd', '#00d2d3', '#ff9ff3', '#54a0ff']
-          : ['#ff3838', '#3742fa', '#2ed573', '#ff9f43', '#ff6b6b', '#70a1ff', '#5f27cd', '#00d2d3', '#ff9ff3', '#54a0ff'];
+          ? ['#ff4757', '#3742fa', '#2ed573', '#ffa502', '#ff6348', '#747d8c', '#5f27cd', '#00d2d3']
+          : ['#ff3838', '#3742fa', '#2ed573', '#ff9f43', '#ff6b6b', '#70a1ff', '#5f27cd', '#00d2d3'];
         fillStyle = colors[((x * 7 + y * 3) % colors.length)];
       } else if (isSelected) {
         fillStyle = selectedColor;
@@ -73,62 +95,39 @@ export const drawPixelGrid = (
         fillStyle = hoveredColor;
       }
 
-      const pixelX = x * pixelSize;
-      const pixelY = y * pixelSize;
-
-      // Draw block with enhanced styling
+      // Draw the pixel
       ctx.fillStyle = fillStyle;
-      ctx.fillRect(pixelX, pixelY, pixelSize - 0.5, pixelSize - 0.5);
+      ctx.fillRect(pixelX, pixelY, pixelSize - 1, pixelSize - 1);
 
-      // Enhanced border with better visibility
+      // Draw border for larger pixels
       if (pixelSize > 4) {
         ctx.strokeStyle = borderColor;
-        ctx.lineWidth = 0.2;
-        ctx.strokeRect(pixelX, pixelY, pixelSize - 0.5, pixelSize - 0.5);
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(pixelX, pixelY, pixelSize - 1, pixelSize - 1);
       }
 
-      // Enhanced selection indicator with glow effect
+      // Enhanced selection indicator
       if (isSelected) {
         ctx.strokeStyle = isDark ? '#000000' : '#ffffff';
-        ctx.lineWidth = Math.max(1, pixelSize / 8);
+        ctx.lineWidth = 2;
         ctx.strokeRect(pixelX + 1, pixelY + 1, pixelSize - 3, pixelSize - 3);
-        
-        // Add inner glow effect for selected blocks
-        if (pixelSize > 6) {
-          ctx.strokeStyle = isDark ? '#ffffff60' : '#00000060';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(pixelX + 2, pixelY + 2, pixelSize - 5, pixelSize - 5);
-        }
       }
 
-      // Enhanced hover effect
+      // Hover effect
       if (isHovered && !isSelected) {
         ctx.strokeStyle = isDark ? '#ffffff80' : '#00000080';
-        ctx.lineWidth = Math.max(1, pixelSize / 10);
-        ctx.strokeRect(pixelX, pixelY, pixelSize - 0.5, pixelSize - 0.5);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(pixelX, pixelY, pixelSize - 1, pixelSize - 1);
       }
+
+      pixelsRendered++;
     }
   }
 
-  // Draw grid lines for better visibility when zoomed in
-  if (pixelSize > 8) {
-    ctx.strokeStyle = isDark ? '#ffffff10' : '#00000010';
-    ctx.lineWidth = 0.5;
-    
-    for (let x = startX; x <= endX; x++) {
-      ctx.beginPath();
-      ctx.moveTo(x * pixelSize, startY * pixelSize);
-      ctx.lineTo(x * pixelSize, endY * pixelSize);
-      ctx.stroke();
-    }
-    
-    for (let y = startY; y <= endY; y++) {
-      ctx.beginPath();
-      ctx.moveTo(startX * pixelSize, y * pixelSize);
-      ctx.lineTo(endX * pixelSize, y * pixelSize);
-      ctx.stroke();
-    }
-  }
-
-  console.log('Rendered', (endX - startX) * (endY - startY), 'pixels');
+  console.log('Actually rendered', pixelsRendered, 'pixels');
+  
+  // Draw a test rectangle to ensure canvas is working
+  ctx.fillStyle = isDark ? '#ff0000' : '#0000ff';
+  ctx.fillRect(10, 10, 50, 50);
+  console.log('Test rectangle drawn at 10,10');
 };
