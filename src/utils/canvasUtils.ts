@@ -1,4 +1,3 @@
-
 export const drawPixelGrid = (
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
@@ -30,10 +29,10 @@ export const drawPixelGrid = (
   ctx.imageSmoothingEnabled = false;
   
   const isDark = theme === 'dark';
-  const backgroundColor = isDark ? '#0a0a0a' : '#fafafa';
+  const backgroundColor = isDark ? '#000000' : '#fafafa';
   const availableColor = isDark ? '#1a1a1a' : '#ffffff';
-  const hoveredColor = isDark ? '#2d2d2d' : '#f0f0f0';
-  const selectedColor = isDark ? '#3b82f6' : '#2563eb';
+  const hoveredColor = isDark ? '#333333' : '#e5e5e5';
+  const selectedColor = isDark ? '#ffffff' : '#000000';
   const gridLineColor = isDark ? '#ffffff08' : '#00000008';
 
   // Clear canvas efficiently
@@ -65,8 +64,8 @@ export const drawPixelGrid = (
 
       if (isSold) {
         const colors = isDark 
-          ? ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#6366f1']
-          : ['#dc2626', '#2563eb', '#059669', '#d97706', '#7c3aed', '#0891b2', '#ea580c', '#65a30d', '#db2777', '#4f46e5'];
+          ? ['#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#1a1a1a', '#0a0a0a', '#050505']
+          : ['#000000', '#1a1a1a', '#333333', '#4d4d4d', '#666666', '#808080', '#999999', '#b3b3b3'];
         fillStyle = colors[((x * 7 + y * 3) % colors.length)];
       } else if (isSelected) {
         fillStyle = selectedColor;

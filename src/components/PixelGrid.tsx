@@ -12,7 +12,7 @@ interface PixelGridProps {
   setSelectedPixels: (pixels: Set<string>) => void;
   hoveredPixel: string | null;
   setHoveredPixel: (pixel: string | null) => void;
-  gridData: Record<string, any>;
+  gridData: Record<string, unknown>;
   isSelecting: boolean;
   setIsSelecting: (selecting: boolean) => void;
 }
@@ -206,6 +206,21 @@ export const PixelGrid = ({
     setIsPanning(false);
   }, []);
 
+  // Initialize interactions first, before touch handlers
+  const interactions = usePixelGridInteractions({
+    soldPixels,
+    selectedPixels,
+    setSelectedPixels,
+    setHoveredPixel,
+    setIsSelecting,
+    pixelSize,
+    gridWidth,
+    gridHeight,
+    pan,
+    zoom,
+    isPanning
+  });
+
   // Touch helper functions updated to work with React.TouchList
   const getTouchDistance = (touches: React.TouchList) => {
     if (touches.length < 2) return 0;
@@ -226,6 +241,7 @@ export const PixelGrid = ({
   // Touch handlers for mobile
   const [lastTouchDistance, setLastTouchDistance] = useState(0);
   const [lastTouchCenter, setLastTouchCenter] = useState({ x: 0, y: 0 });
+  const [isTouchSelecting, setIsTouchSelecting] = useState(false);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
@@ -233,11 +249,17 @@ export const PixelGrid = ({
       const center = getTouchCenter(e.touches);
       setLastTouchDistance(distance);
       setLastTouchCenter(center);
+      setIsTouchSelecting(false);
     } else if (e.touches.length === 1) {
-      setLastPanPoint({ x: e.touches[0].clientX, y: e.touches[0].clientY });
-      setIsPanning(true);
+      // Check if it's a tap for selection
+      const touch = e.touches[0];
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (rect) {
+        interactions.handleTouchStart(e, canvasRef.current!, pan, zoom);
+        setIsTouchSelecting(true);
+      }
     }
-  }, []);
+  }, [interactions, pan, zoom]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
@@ -258,7 +280,12 @@ export const PixelGrid = ({
       
       setLastTouchDistance(distance);
       setLastTouchCenter(center);
-    } else if (e.touches.length === 1 && isPanning) {
+      setIsTouchSelecting(false);
+    } else if (e.touches.length === 1 && isTouchSelecting) {
+      // Handle selection dragging
+      interactions.handleTouchMove(e, canvasRef.current!, pan, zoom);
+    } else if (e.touches.length === 1 && !isTouchSelecting) {
+      // Handle panning
       const deltaX = e.touches[0].clientX - lastPanPoint.x;
       const deltaY = e.touches[0].clientY - lastPanPoint.y;
       
@@ -269,26 +296,14 @@ export const PixelGrid = ({
       
       setLastPanPoint({ x: e.touches[0].clientX, y: e.touches[0].clientY });
     }
-  }, [lastTouchDistance, isPanning, lastPanPoint, handleZoom]);
+  }, [lastTouchDistance, isTouchSelecting, lastPanPoint, handleZoom, interactions, pan, zoom]);
 
   const handleTouchEnd = useCallback(() => {
     setIsPanning(false);
     setLastTouchDistance(0);
-  }, []);
-
-  const interactions = usePixelGridInteractions({
-    soldPixels,
-    selectedPixels,
-    setSelectedPixels,
-    setHoveredPixel,
-    setIsSelecting,
-    pixelSize,
-    gridWidth,
-    gridHeight,
-    pan,
-    zoom,
-    isPanning
-  });
+    setIsTouchSelecting(false);
+    interactions.handleTouchEnd();
+  }, [interactions]);
 
   const resetView = useCallback(() => {
     setZoom(1);

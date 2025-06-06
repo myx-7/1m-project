@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { TrendingUp, Zap, DollarSign, Activity, Sparkles } from "lucide-react";
+import { TrendingUp, Zap, DollarSign, Activity, Sparkles, Blocks } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StatsBarProps {
@@ -18,55 +18,45 @@ export const StatsBar = ({
 }: StatsBarProps) => {
   const availablePixels = totalPixels - soldPixels;
   const soldPercentage = (soldPixels / totalPixels) * 100;
-  const totalVolume = 1234; // Mock data
+  const totalVolume = 2.34; // Mock data in thousands
 
   return (
     <div className="h-14 bg-card/50 backdrop-blur-sm border-t border-border transition-all duration-300">
       <div className="h-full px-4 flex items-center justify-between">
         {/* Left side - Main stats */}
         <div className="flex items-center gap-3 md:gap-6 overflow-x-auto">
-          {/* Available blocks */}
+          {/* Available pixels */}
           <div className="flex items-center gap-2 shrink-0">
-            <div className="relative">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-            </div>
+            <Blocks className="w-3 h-3 text-muted-foreground" />
             <span className="text-xs font-pixel whitespace-nowrap">
               <span className="text-foreground font-semibold">
                 {availablePixels.toLocaleString()}
               </span>
-              <span className="text-muted-foreground hidden sm:inline">
+              <span className="text-muted-foreground">
                 {" "}
-                available
+                pixels left
               </span>
             </span>
           </div>
 
           <Separator orientation="vertical" className="h-6 hidden md:block" />
 
-          {/* Minted stats */}
+          {/* Claimed stats */}
           <div className="flex items-center gap-2 shrink-0">
-            <TrendingUp
-              className={cn(
-                "w-3 h-3 transition-colors duration-300",
-                soldPercentage > 50 ? "text-green-500" : "text-blue-500"
-              )}
-            />
+            <div className="w-2 h-2 bg-foreground rounded-full"></div>
             <span className="text-xs font-pixel whitespace-nowrap">
               <span className="text-foreground font-semibold">
-                {soldPixels}
+                {soldPixels.toLocaleString()}
               </span>
-              <span className="text-muted-foreground hidden sm:inline">
+              <span className="text-muted-foreground">
                 {" "}
-                minted
+                claimed
               </span>
               <Badge
                 variant="secondary"
                 className={cn(
                   "ml-2 text-[10px] font-pixel transition-all duration-300",
-                  soldPercentage > 50
-                    ? "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300"
-                    : "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300"
+                  "bg-foreground/10 text-foreground"
                 )}
               >
                 {soldPercentage.toFixed(1)}%
@@ -76,15 +66,17 @@ export const StatsBar = ({
 
           <Separator orientation="vertical" className="h-6 hidden md:block" />
 
-          {/* Floor price */}
+          {/* Price */}
           <div className="flex items-center gap-2 shrink-0">
-            <DollarSign className="w-3 h-3 text-yellow-500" />
             <span className="text-xs font-pixel whitespace-nowrap">
-              <span className="text-muted-foreground hidden sm:inline">
-                Floor:{" "}
+              <span className="text-muted-foreground">
+                Price:{" "}
               </span>
               <span className="text-foreground font-semibold">
                 {floorPrice} SOL
+              </span>
+              <span className="text-muted-foreground">
+                /pixel
               </span>
             </span>
           </div>
@@ -97,26 +89,25 @@ export const StatsBar = ({
                 className="h-6 hidden md:block"
               />
               <div className="flex items-center gap-2 shrink-0 animate-in fade-in-0 slide-in-from-left-2">
-                <Sparkles className="w-3 h-3 text-primary animate-pulse" />
+                <div className="w-2 h-2 bg-foreground rounded-full animate-pulse"></div>
                 <span className="text-xs font-pixel">
-                  <span className="text-primary font-semibold">
+                  <span className="text-foreground font-semibold">
                     {selectedCount}
                   </span>
-                  <span className="text-muted-foreground"> selected</span>
+                  <span className="text-muted-foreground"> selecting</span>
                 </span>
               </div>
             </>
           )}
         </div>
 
-        {/* Right side - Live indicator and volume */}
+        {/* Right side - Activity indicator */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="hidden md:flex items-center gap-2">
-            <Activity className="w-3 h-3 text-orange-500 animate-pulse" />
             <span className="text-[10px] text-muted-foreground font-pixel">
-              Volume:{" "}
+              Activity:{" "}
               <span className="text-foreground">
-                {totalVolume.toLocaleString()} SOL
+                {totalVolume}K SOL
               </span>
             </span>
           </div>
@@ -124,16 +115,15 @@ export const StatsBar = ({
           <Badge
             variant="secondary"
             className={cn(
-              "bg-gradient-to-r from-orange-100 to-red-100",
-              "dark:from-orange-950 dark:to-red-950",
-              "text-orange-700 dark:text-orange-300",
-              "border-orange-200 dark:border-orange-800",
+              "bg-green-500/10",
+              "text-green-600 dark:text-green-400",
+              "border-green-500/20",
               "text-[10px] font-pixel",
               "hover:scale-105 transition-transform duration-200"
             )}
           >
-            <Zap className="w-3 h-3 mr-1 animate-pulse" />
-            <span className="hidden sm:inline">Real-time LIVE </span>
+            <Activity className="w-3 h-3 mr-1 animate-pulse" />
+            <span className="hidden sm:inline">LIVE</span>
           </Badge>
         </div>
       </div>
