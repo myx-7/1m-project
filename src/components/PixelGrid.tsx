@@ -4,8 +4,9 @@ import { PixelGridLoading } from "./PixelGridLoading";
 import { PixelTooltip } from "./PixelTooltip";
 import { ZoomControls } from "./ZoomControls";
 import { usePixelGridInteractions } from "@/hooks/usePixelGridInteractions";
-import { calculatePixelSize, generateMockSoldPixels } from "@/utils/pixelUtils";
-import { drawPixelGrid } from "@/utils/canvasUtils";
+import { calculatePixelSize, fetchNFTRecords, convertNFTsToSoldPixels, createNFTImageMap } from "@/utils/pixelUtils";
+import { drawPixelGrid, preloadNFTImage } from "@/utils/canvasUtils";
+import { PixelNFTRecord } from "@/types/nft";
 
 interface PixelGridProps {
   selectedPixels: Set<string>;
@@ -38,17 +39,57 @@ export const PixelGrid = ({
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [nftRecords, setNftRecords] = useState<PixelNFTRecord[]>([]);
+  const [soldPixels, setSoldPixels] = useState<Set<string>>(new Set());
   const { theme } = useTheme();
 
   const gridWidth = 100;
   const gridHeight = 100;
-  const soldPixels = useMemo(() => generateMockSoldPixels(), []);
   const pixelSize = basePixelSize * zoom;
 
-  // Loading animation effect
+  // Create NFT image mapping for efficient lookups
+  const nftImageMap = useMemo(() => createNFTImageMap(nftRecords), [nftRecords]);
+
+  // Fetch NFT records on component mount
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
+    const fetchNFTs = async () => {
+      try {
+        const response = await fetchNFTRecords();
+        
+        if (response.success && response.pixels) {
+          setNftRecords(response.pixels);
+          
+          // Convert NFT records to sold pixels set
+          const soldPixelsSet = convertNFTsToSoldPixels(response.pixels);
+          setSoldPixels(soldPixelsSet);
+          
+          console.log('📊 Loaded NFT records:', response.pixels.length);
+          
+          // Preload NFT images for better performance
+          response.pixels.forEach(nft => {
+            if (nft.imageUrl) {
+              preloadNFTImage(nft.imageUrl).catch((error) => {
+                console.warn(`Failed to preload image ${nft.imageUrl}:`, error);
+              });
+            }
+          });
+        } else {
+          console.error('❌ Failed to fetch NFT records:', response.error);
+          // Set empty data on error
+          setNftRecords([]);
+          setSoldPixels(new Set());
+        }
+      } catch (error) {
+        console.error('❌ Failed to fetch NFT records:', error);
+        setNftRecords([]);
+        setSoldPixels(new Set());
+      } finally {
+        // Add a delay to show loading animation
+        setTimeout(() => setIsLoading(false), 800);
+      }
+    };
+
+    fetchNFTs();
   }, []);
 
   const updateDimensions = useCallback(() => {
@@ -82,7 +123,7 @@ export const PixelGrid = ({
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // Check if we need to redraw (performance optimization)
+      // Performance optimization - skip redraw if nothing changed
       const drawParams = JSON.stringify({
         pixelSize,
         selectedPixels: Array.from(selectedPixels).sort(),
@@ -90,7 +131,8 @@ export const PixelGrid = ({
         theme,
         pan,
         zoom,
-        dimensions
+        dimensions,
+        nftRecordsLength: nftRecords.length
       });
 
       if (lastDrawParamsRef.current === drawParams) {
@@ -111,13 +153,14 @@ export const PixelGrid = ({
         selectedPixels,
         hoveredPixel,
         soldPixels,
+        nftRecords, // Pass NFT records for image rendering
         theme,
         pan,
         zoom,
         containerDimensions: dimensions
       });
     });
-  }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, theme, pan, zoom, dimensions]);
+  }, [pixelSize, selectedPixels, hoveredPixel, soldPixels, nftRecords, theme, pan, zoom, dimensions]);
 
   useEffect(() => {
     if (!isLoading && dimensions.width > 0 && dimensions.height > 0) {
@@ -206,7 +249,7 @@ export const PixelGrid = ({
     setIsPanning(false);
   }, []);
 
-  // Initialize interactions first, before touch handlers
+  // Initialize interactions hook with NFT data
   const interactions = usePixelGridInteractions({
     soldPixels,
     selectedPixels,
@@ -218,10 +261,11 @@ export const PixelGrid = ({
     gridHeight,
     pan,
     zoom,
-    isPanning
+    isPanning,
+    nftImageMap // Pass NFT mapping for enhanced tooltips
   });
 
-  // Touch helper functions updated to work with React.TouchList
+  // Touch helper functions
   const getTouchDistance = (touches: React.TouchList) => {
     if (touches.length < 2) return 0;
     const dx = touches[0].clientX - touches[1].clientX;
@@ -238,20 +282,21 @@ export const PixelGrid = ({
     return { x, y };
   };
 
-  // Touch handlers for mobile
+  // Touch handlers for mobile support
   const [lastTouchDistance, setLastTouchDistance] = useState(0);
   const [lastTouchCenter, setLastTouchCenter] = useState({ x: 0, y: 0 });
   const [isTouchSelecting, setIsTouchSelecting] = useState(false);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
+      // Pinch zoom start
       const distance = getTouchDistance(e.touches);
       const center = getTouchCenter(e.touches);
       setLastTouchDistance(distance);
       setLastTouchCenter(center);
       setIsTouchSelecting(false);
     } else if (e.touches.length === 1) {
-      // Check if it's a tap for selection
+      // Single touch for selection or panning
       const touch = e.touches[0];
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect) {
@@ -265,6 +310,7 @@ export const PixelGrid = ({
     e.preventDefault();
     
     if (e.touches.length === 2) {
+      // Pinch zoom
       const distance = getTouchDistance(e.touches);
       const center = getTouchCenter(e.touches);
       
@@ -382,6 +428,7 @@ export const PixelGrid = ({
             <PixelTooltip
               hoveredPixel={hoveredPixel}
               soldPixels={soldPixels}
+              nftImageMap={nftImageMap}
               pixelSize={pixelSize}
               dimensions={dimensions}
               pan={pan}

@@ -1,3 +1,5 @@
+import { PixelNFTRecord, FetchPixelsResponse } from "@/types/nft";
+import { fetchPixelsAPI } from "@/api/pixels";
 
 export const getPixelFromMouse = (
   e: React.MouseEvent | React.TouchEvent,
@@ -52,13 +54,46 @@ export const calculatePixelSize = (
   return Math.max(4, Math.min(maxPixelWidth, maxPixelHeight, 20));
 };
 
-export const generateMockSoldPixels = () => {
-  return new Set([
-    "10,10", "11,10", "12,10", "13,10", "14,10", "15,10",
-    "25,25", "26,25", "25,26", "26,26", "27,25", "27,26",
-    "50,50", "51,50", "52,50", "50,51", "51,51", "52,51", "53,51", "53,50",
-    "75,30", "76,30", "77,30", "75,31", "76,31", "77,31",
-    "20,70", "21,70", "22,70", "20,71", "21,71", "22,71",
-    "80,80", "81,80", "82,80", "80,81", "81,81", "82,81"
-  ]);
+// API fetch function for NFT records using mock API
+export const fetchNFTRecords = async (): Promise<FetchPixelsResponse> => {
+  try {
+    const response = await fetchPixelsAPI();
+    return response;
+  } catch (error) {
+    console.error('❌ Failed to fetch NFT records:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+};
+
+// Convert NFT records to sold pixels set
+export const convertNFTsToSoldPixels = (nftRecords: PixelNFTRecord[]): Set<string> => {
+  const soldPixelsSet = new Set<string>();
+  
+  nftRecords.forEach(nft => {
+    for (let x = nft.startX; x <= nft.endX; x++) {
+      for (let y = nft.startY; y <= nft.endY; y++) {
+        soldPixelsSet.add(`${x},${y}`);
+      }
+    }
+  });
+  
+  return soldPixelsSet;
+};
+
+// Create NFT-to-coordinate mapping for efficient lookups
+export const createNFTImageMap = (nftRecords: PixelNFTRecord[]): Map<string, { nft: PixelNFTRecord; imageLoaded: boolean }> => {
+  const map = new Map<string, { nft: PixelNFTRecord; imageLoaded: boolean }>();
+  
+  nftRecords.forEach(nft => {
+    for (let x = nft.startX; x <= nft.endX; x++) {
+      for (let y = nft.startY; y <= nft.endY; y++) {
+        map.set(`${x},${y}`, { nft, imageLoaded: false });
+      }
+    }
+  });
+  
+  return map;
 };

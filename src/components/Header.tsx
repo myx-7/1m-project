@@ -22,17 +22,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { HowItWorksDialog } from "./HowItWorksDialog";
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 
 export const Header = () => {
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [walletAddress] = useState(
-    "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
-  );
+  const { publicKey, connected, disconnect } = useWallet();
+  const { visible, setVisible } = useWalletModal();
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  };
+
+  const handleWalletClick = () => {
+    if (connected) {
+      disconnect();
+    } else {
+      setVisible(!visible);
+    }
   };
 
   return (
@@ -100,22 +108,22 @@ export const Header = () => {
 
             <Button
               size="sm"
-              variant={isWalletConnected ? "secondary" : "default"}
-              onClick={() => setIsWalletConnected(!isWalletConnected)}
+              variant={connected ? "secondary" : "default"}
+              onClick={handleWalletClick}
               className={cn(
                 "transition-all duration-300 font-pixel text-xs relative overflow-hidden group",
-                isWalletConnected
+                connected
                   ? "bg-foreground/10 border border-foreground/20 text-foreground hover:bg-foreground/20"
                   : "bg-foreground text-background hover:bg-foreground/90"
               )}
             >
               <div className="relative z-10 flex items-center">
                 <Wallet className="w-4 h-4 mr-2" />
-                {isWalletConnected
-                  ? formatAddress(walletAddress)
+                {connected && publicKey
+                  ? formatAddress(publicKey.toString())
                   : "Connect Wallet"}
               </div>
-              {!isWalletConnected && (
+              {!connected && (
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               )}
             </Button>
@@ -147,12 +155,10 @@ export const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem
-                  onClick={() => setIsWalletConnected(!isWalletConnected)}
-                >
+                <DropdownMenuItem onClick={handleWalletClick}>
                   <Wallet className="w-4 h-4 mr-2" />
-                  {isWalletConnected
-                    ? formatAddress(walletAddress)
+                  {connected && publicKey
+                    ? formatAddress(publicKey.toString())
                     : "Connect Wallet"}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

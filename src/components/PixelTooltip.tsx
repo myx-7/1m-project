@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { PixelNFTRecord } from "@/types/nft";
 
 interface PixelTooltipProps {
   hoveredPixel: string;
   soldPixels: Set<string>;
+  nftImageMap?: Map<string, { nft: PixelNFTRecord; imageLoaded: boolean }>;
   pixelSize: number;
   dimensions: { width: number; height: number };
   pan?: { x: number; y: number };
@@ -12,7 +14,8 @@ interface PixelTooltipProps {
 
 export const PixelTooltip = ({ 
   hoveredPixel, 
-  soldPixels, 
+  soldPixels,
+  nftImageMap,
   pixelSize, 
   dimensions,
   pan = { x: 0, y: 0 },
@@ -20,14 +23,15 @@ export const PixelTooltip = ({
 }: PixelTooltipProps) => {
   const [x, y] = hoveredPixel.split(',').map(Number);
   const isSold = soldPixels.has(hoveredPixel);
+  const nftData = nftImageMap?.get(hoveredPixel);
   
   // Calculate position with pan and zoom
   const pixelScreenX = x * pixelSize + pan.x;
   const pixelScreenY = y * pixelSize + pan.y;
   
   // Smart positioning - show tooltip where there's space
-  const tooltipWidth = 200;
-  const tooltipHeight = 80;
+  const tooltipWidth = 240;
+  const tooltipHeight = nftData ? 120 : 80;
   const padding = 20;
   
   let tooltipX = pixelScreenX + pixelSize + 10; // Default: right of pixel
@@ -45,6 +49,12 @@ export const PixelTooltip = ({
   if (tooltipY < padding) {
     tooltipY = padding;
   }
+
+  // Format wallet address for display
+  const formatWallet = (wallet: string) => {
+    if (wallet.length <= 8) return wallet;
+    return `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
+  };
   
   return (
     <div 
@@ -74,7 +84,7 @@ export const PixelTooltip = ({
           <span className="font-semibold text-sm font-pixel">
             #{x},{y}
           </span>
-      </div>
+        </div>
         <Badge 
           variant={isSold ? "secondary" : "default"}
           className={cn(
@@ -88,20 +98,45 @@ export const PixelTooltip = ({
         </Badge>
       </div>
       
-      {/* Price or owner info */}
-      <div className="text-xs text-muted-foreground font-pixel">
-        {isSold ? (
-          <div className="flex items-center gap-1">
-            <span>Owner:</span>
-            <span className="text-foreground font-medium">anon...7x9f</span>
+      {/* NFT or price info */}
+      {nftData ? (
+        <div className="space-y-2">
+          <div className="text-xs text-muted-foreground font-pixel">
+            <div className="flex items-center gap-1 mb-1">
+              <span>Owner:</span>
+              <span className="text-foreground font-medium">
+                {formatWallet(nftData.nft.ownerWallet)}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 mb-1">
+              <span>NFT:</span>
+              <span className="text-foreground font-medium truncate">
+                {formatWallet(nftData.nft.nftMintAddress)}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span>Size:</span>
+              <span className="text-foreground font-medium">
+                {nftData.nft.endX - nftData.nft.startX + 1}×{nftData.nft.endY - nftData.nft.startY + 1}px
+              </span>
+            </div>
+          </div>
         </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <span>Price:</span>
-            <span className="text-foreground font-semibold">0.01 SOL</span>
+      ) : (
+        <div className="text-xs text-muted-foreground font-pixel">
+          {isSold ? (
+            <div className="flex items-center gap-1">
+              <span>Owner:</span>
+              <span className="text-foreground font-medium">anon...7x9f</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <span>Price:</span>
+              <span className="text-foreground font-semibold">0.01 SOL</span>
+            </div>
+          )}
         </div>
       )}
-      </div>
     </div>
   );
 };

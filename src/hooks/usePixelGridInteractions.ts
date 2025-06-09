@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { getPixelFromMouse } from "@/utils/pixelUtils";
+import { PixelNFTRecord } from "@/types/nft";
 
 interface UsePixelGridInteractionsProps {
   soldPixels: Set<string>;
@@ -13,6 +14,7 @@ interface UsePixelGridInteractionsProps {
   pan?: { x: number; y: number };
   zoom?: number;
   isPanning?: boolean;
+  nftImageMap?: Map<string, { nft: PixelNFTRecord; imageLoaded: boolean }>;
 }
 
 export const usePixelGridInteractions = ({
@@ -26,7 +28,8 @@ export const usePixelGridInteractions = ({
   gridHeight,
   pan = { x: 0, y: 0 },
   zoom = 1,
-  isPanning = false
+  isPanning = false,
+  nftImageMap
 }: UsePixelGridInteractionsProps) => {
   const [dragStart, setDragStart] = useState<{x: number, y: number} | null>(null);
 
