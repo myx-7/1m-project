@@ -22,8 +22,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { HowItWorksDialog } from "./HowItWorksDialog";
-import { useWallet } from '@solana/wallet-adapter-react';
-import { useWalletModal } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 export const Header = () => {
   const { publicKey, connected, disconnect } = useWallet();
@@ -57,11 +57,19 @@ export const Header = () => {
             </div>
             <div className="flex flex-col">
               <h1 className="text-base font-bold text-foreground leading-none hover:text-foreground/80 transition-colors duration-200 font-pixel tracking-tight">
-                Million Dollar Page
+                millionsolpage.com
               </h1>
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-[11px] text-muted-foreground hidden sm:block font-pixel">
                   Own a piece of blockchain history
+                </p>
+                <div className="w-1 h-1 bg-muted-foreground/40 rounded-full hidden sm:block" />
+                <p className="text-[11px] text-muted-foreground hidden sm:block font-pixel">
+                  1,000,000 pixels
+                </p>
+                <div className="w-1 h-1 bg-muted-foreground/40 rounded-full hidden sm:block" />
+                <p className="text-[11px] text-muted-foreground hidden sm:block font-pixel">
+                  FREE MINT
                 </p>
                 <Badge
                   variant="secondary"
@@ -184,8 +192,11 @@ export const Header = () => {
           </div>
         </div>
       </header>
-      
-      <HowItWorksDialog open={showHowItWorks} onOpenChange={setShowHowItWorks} />
+
+      <HowItWorksDialog
+        open={showHowItWorks}
+        onOpenChange={setShowHowItWorks}
+      />
     </>
   );
 };
