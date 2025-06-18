@@ -111,7 +111,7 @@ const Index = () => {
                       "lg:hidden fixed bottom-20 right-4 rounded-full w-14 h-14 p-0 shadow-xl hover:scale-110 transition-all duration-300 z-40",
                       showMobileChat
                         ? "bg-destructive hover:bg-destructive/90"
-                        : "bg-primary hover:bg-primary/90 animate-bounce"
+                        : "bg-primary hover:bg-primary/90"
                     )}
                   >
                     {showMobileChat ? (
@@ -123,8 +123,8 @@ const Index = () => {
 
                   {/* Mobile Chat Overlay */}
                   {showMobileChat && (
-                    <div className="lg:hidden fixed inset-0 z-30 bg-background/95 backdrop-blur-md animate-in slide-in-from-bottom duration-300">
-                      <div className="h-full pt-16">
+                    <div className="lg:hidden fixed inset-0 z-30">
+                      <div className="absolute inset-0 bg-background">
                         <PublicChat
                           onClose={() => setShowMobileChat(false)}
                           isDesktop={false}

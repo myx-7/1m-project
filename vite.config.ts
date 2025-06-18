@@ -38,6 +38,49 @@ export default defineConfig(({ mode }) => ({
     global: 'globalThis',
     'process.env': '{}',
   },
+  build: {
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks for better caching
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-solana': [
+            '@solana/web3.js',
+            '@solana/wallet-adapter-base',
+            '@solana/wallet-adapter-react',
+            '@solana/wallet-adapter-react-ui',
+            '@solana/wallet-adapter-wallets'
+          ],
+          'vendor-metaplex': ['@metaplex-foundation/js'],
+          'vendor-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip',
+            'lucide-react'
+          ],
+          'vendor-utils': [
+            'clsx',
+            'tailwind-merge',
+            'class-variance-authority',
+            'date-fns'
+          ]
+        }
+      }
+    },
+    // Optimize build
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      },
+    },
+    // Source maps for debugging
+    sourcemap: mode === 'development',
+  },
   optimizeDeps: {
     include: [
       '@solana/web3.js',
@@ -47,6 +90,9 @@ export default defineConfig(({ mode }) => ({
       '@solana/wallet-adapter-wallets',
       '@metaplex-foundation/js',
       'buffer',
+      'react',
+      'react-dom',
+      'lucide-react',
     ],
   },
 }));

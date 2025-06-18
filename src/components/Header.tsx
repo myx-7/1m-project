@@ -24,6 +24,7 @@ import {
 import { HowItWorksDialog } from "./HowItWorksDialog";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { Logo } from "./Logo";
 
 export const Header = () => {
   const { publicKey, connected, disconnect } = useWallet();
@@ -45,55 +46,50 @@ export const Header = () => {
 
   return (
     <>
-      <header className="h-16 border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50 transition-all duration-300">
-        <div className="h-full px-4 md:px-6 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-foreground/10 rounded-lg blur-xl group-hover:bg-foreground/20 transition-all duration-300" />
-              <div className="relative w-8 h-8 bg-foreground rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:rotate-12 group-hover:shadow-lg">
-                <Blocks className="w-4 h-4 text-background" />
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-base font-bold text-foreground leading-none hover:text-foreground/80 transition-colors duration-200 font-pixel tracking-tight">
-                millionsolpage.com
-              </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-[11px] text-muted-foreground hidden sm:block font-pixel">
-                  Own a piece of blockchain history
-                </p>
-                <div className="w-1 h-1 bg-muted-foreground/40 rounded-full hidden sm:block" />
-                <p className="text-[11px] text-muted-foreground hidden sm:block font-pixel">
-                  1,000,000 pixels
-                </p>
-                <div className="w-1 h-1 bg-muted-foreground/40 rounded-full hidden sm:block" />
-                <p className="text-[11px] text-muted-foreground hidden sm:block font-pixel">
-                  FREE MINT
-                </p>
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    "text-[9px] px-2 py-0 font-pixel",
-                    "bg-green-500/10",
-                    "text-green-600 dark:text-green-400",
-                    "border-green-500/20",
-                    "animate-pulse"
-                  )}
-                >
-                  <span className="mr-1">●</span> LIVE
-                </Badge>
-              </div>
+      <header className="h-14 sm:h-16 border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="h-full px-3 sm:px-4 md:px-6 flex items-center justify-between">
+          {/* Logo & Description */}
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+            {/* Main Logo */}
+            <Logo size="sm" />
+            
+            {/* Tagline & Info */}
+            <div className="hidden xs:flex items-center gap-1 sm:gap-2 overflow-hidden">
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-sans whitespace-nowrap">
+                <span className="hidden sm:inline">Advertise forever • Reach millions</span>
+                <span className="sm:hidden">Advertise forever</span>
+              </p>
+              <div className="w-1 h-1 bg-muted-foreground/40 rounded-full hidden sm:block" />
+              <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block font-sans whitespace-nowrap">
+                Own your space
+              </p>
+              <div className="w-1 h-1 bg-muted-foreground/40 rounded-full hidden sm:block" />
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-sans whitespace-nowrap">
+                <span className="hidden sm:inline">From 0.01 SOL</span>
+                <span className="sm:hidden">0.01 SOL</span>
+              </p>
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "text-[8px] sm:text-[9px] px-1 sm:px-2 py-0 font-sans ml-1",
+                  "bg-blue-500/10",
+                  "text-blue-600 dark:text-blue-400",
+                  "border-blue-500/20"
+                )}
+              >
+                <span className="mr-0.5 sm:mr-1">🚀</span> 
+                <span className="hidden xs:inline">HOT</span>
+              </Badge>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-2 flex-shrink-0">
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setShowHowItWorks(true)}
-              className="text-muted-foreground hover:text-foreground transition-all duration-200 font-pixel text-xs"
+              className="text-muted-foreground hover:text-foreground font-sans text-xs"
             >
               <Info className="w-4 h-4 mr-2" />
               How it works
@@ -103,7 +99,7 @@ export const Header = () => {
               size="sm"
               variant="ghost"
               onClick={toggleTheme}
-              className="text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-110"
+              className="text-muted-foreground hover:text-foreground"
             >
               {theme === "dark" ? (
                 <Sun className="w-4 h-4" />
@@ -119,31 +115,26 @@ export const Header = () => {
               variant={connected ? "secondary" : "default"}
               onClick={handleWalletClick}
               className={cn(
-                "transition-all duration-300 font-pixel text-xs relative overflow-hidden group",
+                "font-sans text-xs",
                 connected
                   ? "bg-foreground/10 border border-foreground/20 text-foreground hover:bg-foreground/20"
                   : "bg-foreground text-background hover:bg-foreground/90"
               )}
             >
-              <div className="relative z-10 flex items-center">
-                <Wallet className="w-4 h-4 mr-2" />
-                {connected && publicKey
-                  ? formatAddress(publicKey.toString())
-                  : "Connect Wallet"}
-              </div>
-              {!connected && (
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-              )}
+              <Wallet className="w-4 h-4 mr-2" />
+              {connected && publicKey
+                ? formatAddress(publicKey.toString())
+                : "Connect Wallet"}
             </Button>
           </nav>
 
-          {/* Mobile Menu */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile Navigation */}
+          <div className="flex md:hidden items-center gap-1 sm:gap-2 flex-shrink-0">
             <Button
               size="sm"
               variant="ghost"
               onClick={toggleTheme}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground p-1.5 sm:p-2"
             >
               {theme === "dark" ? (
                 <Sun className="w-4 h-4" />
@@ -157,9 +148,9 @@ export const Header = () => {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground p-1.5 sm:p-2"
                 >
-                  <Menu className="w-5 h-5" />
+                  <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">

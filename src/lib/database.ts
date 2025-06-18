@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
-import PixelNFT, { IPixelNFT } from '@/models/PixelNFT';
+import { PixelNFTModel } from '@/models/PixelNFT';
+import { PixelNFTRecord } from '@/types/nft';
 
-// Type for lean query results
+// Type definitions for lean queries
 type PixelNFTLean = {
   _id: mongoose.Types.ObjectId;
   id: string;
@@ -18,6 +19,10 @@ type PixelNFTLean = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+// This is a legacy MongoDB-based implementation
+// The actual implementation now uses Supabase through PixelNFTModel
+// Keeping this for backward compatibility and potential future use
 
 // MongoDB connection helper
 export async function connectToDatabase() {
@@ -41,34 +46,24 @@ export class PixelDatabase {
   
   // Check if pixels are available for purchase
   static async arePixelsAvailable(pixelIds: number[]): Promise<boolean> {
-    await connectToDatabase();
+    // Use Supabase implementation
+    const startX = Math.min(...pixelIds.map(id => id % 1000));
+    const startY = Math.min(...pixelIds.map(id => Math.floor(id / 1000)));
+    const endX = Math.max(...pixelIds.map(id => id % 1000));
+    const endY = Math.max(...pixelIds.map(id => Math.floor(id / 1000)));
     
-    const existingPixels = await PixelNFT.find({
-      pixelIds: { $in: pixelIds }
-    }).lean();
-    
-    return existingPixels.length === 0;
+    return await PixelNFTModel.arePixelsAvailable(startX, startY, endX, endY);
   }
 
   // Find all pixels owned by a wallet
-  static async getPixelsByOwner(ownerWallet: string): Promise<PixelNFTLean[]> {
-    await connectToDatabase();
-    
-    return await PixelNFT.find({ ownerWallet })
-      .sort({ createdAt: -1 })
-      .lean() as unknown as PixelNFTLean[];
+  static async getPixelsByOwner(ownerWallet: string): Promise<PixelNFTRecord[]> {
+    return await PixelNFTModel.getByOwner(ownerWallet);
   }
 
   // Find pixel by coordinates
-  static async getPixelByCoordinates(x: number, y: number): Promise<PixelNFTLean | null> {
-    await connectToDatabase();
-    
-    return await PixelNFT.findOne({
-      startX: { $lte: x },
-      endX: { $gte: x },
-      startY: { $lte: y },
-      endY: { $gte: y }
-    }).lean() as unknown as PixelNFTLean | null;
+  static async getPixelByCoordinates(x: number, y: number): Promise<PixelNFTRecord | null> {
+    const pixels = await PixelNFTModel.getByPixelCoordinates(x, y);
+    return pixels.length > 0 ? pixels[0] : null;
   }
 
   // Find overlapping pixels for conflict detection
@@ -77,76 +72,31 @@ export class PixelDatabase {
     startY: number, 
     endX: number, 
     endY: number
-  ): Promise<PixelNFTLean[]> {
-    await connectToDatabase();
-    
-    return await PixelNFT.find({
-      $or: [
-        {
-          startX: { $lte: endX },
-          endX: { $gte: startX },
-          startY: { $lte: endY },
-          endY: { $gte: startY }
-        }
-      ]
-    }).lean() as unknown as PixelNFTLean[];
+  ): Promise<PixelNFTRecord[]> {
+    return await PixelNFTModel.getPixelsInRange(startX, startY, endX, endY);
   }
 
   // Get total statistics
   static async getStatistics() {
-    await connectToDatabase();
-    
-    const stats = await PixelNFT.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalNFTs: { $sum: 1 },
-          totalPixels: { $sum: { $size: '$pixelIds' } },
-          uniqueOwners: { $addToSet: '$ownerWallet' },
-          totalValueSOL: { $sum: { $multiply: [{ $size: '$pixelIds' }, 0.001] } }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          totalNFTs: 1,
-          totalPixels: 1,
-          uniqueOwners: { $size: '$uniqueOwners' },
-          totalValueSOL: 1,
-          averagePixelsPerNFT: { $divide: ['$totalPixels', '$totalNFTs'] }
-        }
-      }
-    ]);
-
-    return stats[0] || {
-      totalNFTs: 0,
-      totalPixels: 0,
-      uniqueOwners: 0,
-      totalValueSOL: 0,
-      averagePixelsPerNFT: 0
-    };
+    return await PixelNFTModel.getGridStatistics();
   }
 
   // Get recent activities
-  static async getRecentActivities(limit: number = 10): Promise<PixelNFTLean[]> {
-    await connectToDatabase();
-    
-    return await PixelNFT.find({})
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean() as unknown as PixelNFTLean[];
+  static async getRecentActivities(limit: number = 10): Promise<PixelNFTRecord[]> {
+    const allPixels = await PixelNFTModel.getAll();
+    return allPixels.slice(0, limit);
   }
 
   // Bulk insert pixels (for data migration or seeding)
-  static async bulkInsertPixels(pixels: Omit<IPixelNFT, '_id' | 'createdAt' | 'updatedAt'>[]): Promise<void> {
-    await connectToDatabase();
-    
+  static async bulkInsertPixels(pixels: Omit<PixelNFTRecord, 'id'>[]): Promise<void> {
     try {
-      await PixelNFT.insertMany(pixels, { ordered: false });
+      for (const pixel of pixels) {
+        await PixelNFTModel.create(pixel);
+      }
       console.log(`✅ Bulk inserted ${pixels.length} pixel NFTs`);
-    } catch (error: any) {
-      if (error.code === 11000) {
-        console.log(`⚠️ Some duplicates skipped during bulk insert`);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'message' in error) {
+        console.log(`⚠️ Some duplicates skipped during bulk insert: ${error.message}`);
       } else {
         throw error;
       }
@@ -155,24 +105,33 @@ export class PixelDatabase {
 
   // Delete pixel NFT (admin function)
   static async deletePixelNFT(nftMintAddress: string): Promise<boolean> {
-    await connectToDatabase();
-    
-    const result = await PixelNFT.deleteOne({ nftMintAddress });
-    return result.deletedCount > 0;
+    try {
+      const pixel = await PixelNFTModel.getByMintAddress(nftMintAddress);
+      if (pixel) {
+        return await PixelNFTModel.delete(pixel.id);
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to delete pixel NFT:', error);
+      return false;
+    }
   }
 
   // Update pixel NFT (for corrections)
   static async updatePixelNFT(
     nftMintAddress: string, 
-    updates: Partial<IPixelNFT>
-  ): Promise<PixelNFTLean | null> {
-    await connectToDatabase();
-    
-    return await PixelNFT.findOneAndUpdate(
-      { nftMintAddress },
-      updates,
-      { new: true, runValidators: true }
-    ).lean() as unknown as PixelNFTLean | null;
+    updates: Partial<PixelNFTRecord>
+  ): Promise<PixelNFTRecord | null> {
+    try {
+      const pixel = await PixelNFTModel.getByMintAddress(nftMintAddress);
+      if (pixel) {
+        return await PixelNFTModel.update(pixel.id, updates);
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to update pixel NFT:', error);
+      return null;
+    }
   }
 
   // Validate pixel selection before minting
@@ -183,8 +142,6 @@ export class PixelDatabase {
     endX: number,
     endY: number
   ): Promise<{ valid: boolean; error?: string }> {
-    await connectToDatabase();
-
     // Check coordinate bounds
     if (startX < 0 || startY < 0 || endX >= 1000 || endY >= 1000) {
       return { valid: false, error: 'Coordinates out of bounds' };

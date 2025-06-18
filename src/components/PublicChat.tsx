@@ -28,7 +28,7 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
   const { connected, publicKey } = useWallet();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [onlineCount, setOnlineCount] = useState(42);
+  const [onlineCount, setOnlineCount] = useState(0);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [userEmoji, setUserEmoji] = useState(getRandomEmoji());
@@ -198,71 +198,73 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
         </Button>
       </div>
       
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-xs">Anonymous Mode</span>
-          {isAnonymous ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Anonymous Mode</span>
+          <Button
+            size="sm"
+            variant={isAnonymous ? "default" : "ghost"}
+            onClick={() => setIsAnonymous(!isAnonymous)}
+            className="h-7 px-2 text-xs"
+          >
+            {isAnonymous ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+            {isAnonymous ? 'ON' : 'OFF'}
+          </Button>
         </div>
-        <Button
-          size="sm"
-          variant={isAnonymous ? "default" : "outline"}
-          onClick={() => setIsAnonymous(!isAnonymous)}
-          className="h-6 text-xs"
-        >
-          {isAnonymous ? "ON" : "OFF"}
-        </Button>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Your Emoji</span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setUserEmoji(getRandomEmoji())}
+            className="h-7 px-2 text-xs"
+          >
+            <Sparkles className="w-3 h-3 mr-1" />
+            {userEmoji}
+          </Button>
+        </div>
       </div>
-
-      <div className="flex items-center justify-between">
-        <span className="text-xs">Emoji</span>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setUserEmoji(getRandomEmoji())}
-          className="h-6 text-xs"
-        >
-          {userEmoji} <Sparkles className="w-3 h-3 ml-1" />
-        </Button>
-      </div>
-
+      
       {!connected && (
-        <div className="pt-2">
-          <WalletMultiButton className="!h-7 !text-xs w-full" />
+        <div className="pt-2 border-t border-border">
+          <p className="text-xs text-muted-foreground mb-2">Connect wallet for verified chat</p>
+          <WalletMultiButton className="!h-8 !text-xs w-full" />
         </div>
       )}
     </div>
   );
 
+  // Mobile fullscreen chat
   if (!isDesktop) {
-    // Mobile full-screen chat
     return (
-      <div className="h-full flex flex-col bg-background">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <MessageSquare className="w-5 h-5 text-primary animate-pulse" />
-            <h2 className="text-lg font-semibold font-pixel">Global Chat</h2>
+      <div className="h-full w-full flex flex-col bg-background">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <h2 className="text-base sm:text-lg font-semibold font-pixel">Global Chat</h2>
             <div className="flex items-center gap-1 text-xs text-green-500">
               <Users className="w-3 h-3" />
               <span>{onlineCount}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setShowSettings(!showSettings)}
-              className="hover:bg-muted"
+              className="hover:bg-muted p-1.5 sm:p-2"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
             {onClose && (
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={onClose}
-                className="hover:bg-muted"
+                className="hover:bg-muted p-1.5 sm:p-2"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
             )}
           </div>
@@ -270,58 +272,60 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
 
         {showSettings && <SettingsPanel />}
         
-        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-          {isLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="text-sm text-muted-foreground">Loading messages...</div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((msg) => (
-                <div key={msg.id} className="animate-in fade-in-0 slide-in-from-bottom-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-primary font-pixel text-sm">
-                      {getMessageDisplayName(msg)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatTime(msg.created_at)}
-                    </span>
-                    {!msg.is_anonymous && msg.user_wallet && (
-                      <span className="text-xs text-blue-500 opacity-60">
-                        🔗
+        <div className="flex-1 flex flex-col min-h-0">
+          <ScrollArea className="flex-1 p-3 sm:p-4" ref={scrollAreaRef}>
+            {isLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-sm text-muted-foreground">Loading messages...</div>
+              </div>
+            ) : (
+              <div className="space-y-3 sm:space-y-4">
+                {messages.map((msg) => (
+                  <div key={msg.id}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-primary font-pixel text-xs sm:text-sm">
+                        {getMessageDisplayName(msg)}
                       </span>
-                    )}
+                      <span className="text-xs text-muted-foreground">
+                        {formatTime(msg.created_at)}
+                      </span>
+                      {!msg.is_anonymous && msg.user_wallet && (
+                        <span className="text-xs text-blue-500 opacity-60">
+                          🔗
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-foreground text-sm leading-relaxed pl-4 sm:pl-6 border-l-2 border-primary/20">
+                      {msg.message}
+                    </div>
                   </div>
-                  <div className="text-foreground text-sm leading-relaxed pl-6 border-l-2 border-primary/20">
-                    {msg.message}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+          
+          <div className="p-3 sm:p-4 border-t border-border flex-shrink-0">
+            <div className="flex gap-2">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder={isAnonymous ? "Type anonymously..." : "Type a message..."}
+                className="text-sm bg-muted/30 border-primary/20 font-pixel"
+                onKeyPress={handleKeyPress}
+                maxLength={280}
+              />
+              <Button
+                size="default"
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim()}
+                className="bg-primary hover:bg-primary/90 px-3 sm:px-4"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
             </div>
-          )}
-        </ScrollArea>
-        
-        <div className="p-4 border-t border-border">
-          <div className="flex gap-2">
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder={isAnonymous ? "Type anonymously..." : "Type a message..."}
-              className="text-sm bg-muted/30 border-primary/20 font-pixel"
-              onKeyPress={handleKeyPress}
-              maxLength={280}
-            />
-            <Button
-              size="default"
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
-              className="bg-primary hover:bg-primary/90 transition-all duration-200"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
-          <div className="text-xs text-muted-foreground mt-2 text-center">
-            {isAnonymous ? `Chatting as ${userEmoji} anon` : connected ? `Chatting as ${userEmoji} ${truncateWallet(publicKey?.toString() || '')}` : 'Connect wallet or chat anonymously'}
+            <div className="text-xs text-muted-foreground mt-2 text-center">
+              {isAnonymous ? `Chatting as ${userEmoji} anon` : connected ? `Chatting as ${userEmoji} ${truncateWallet(publicKey?.toString() || '')}` : 'Connect wallet or chat anonymously'}
+            </div>
           </div>
         </div>
       </div>
@@ -331,13 +335,13 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
   // Desktop sidebar chat
   return (
     <Card className={cn(
-      "h-full border-0 shadow-none bg-transparent transition-all duration-300",
+      "h-full border-0 shadow-none bg-transparent",
       isMinimized && "h-auto"
     )}>
-      <CardHeader className="pb-3 px-4">
+      <CardHeader className="pb-3 px-3 sm:px-4">
         <CardTitle className="text-sm flex items-center justify-between font-pixel">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-primary animate-pulse" />
+            <MessageSquare className="w-4 h-4 text-primary" />
             <span>Global Chat</span>
             <div className="flex items-center gap-1 text-xs text-green-500">
               <Users className="w-3 h-3" />
@@ -360,7 +364,7 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
               className="h-6 w-6 p-0 hover:bg-muted"
             >
               <ChevronDown className={cn(
-                "w-4 h-4 transition-transform duration-200",
+                "w-4 h-4",
                 isMinimized && "rotate-180"
               )} />
             </Button>
@@ -390,21 +394,21 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
             ) : (
               <div className="space-y-3">
                 {messages.map((msg) => (
-                  <div key={msg.id} className="text-xs break-words animate-in fade-in-0 slide-in-from-bottom-1">
+                  <div key={msg.id} className="text-xs break-words">
                     <div className="flex items-center gap-1 mb-1">
-                      <span className="font-semibold text-primary font-pixel text-[11px]">
+                      <span className="font-semibold text-primary font-pixel text-[10px] sm:text-[11px]">
                         {getMessageDisplayName(msg)}
                       </span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[9px] sm:text-[10px] text-muted-foreground">
                         {formatTime(msg.created_at)}
                       </span>
                       {!msg.is_anonymous && msg.user_wallet && (
-                        <span className="text-[9px] text-blue-500 opacity-60">
+                        <span className="text-[8px] sm:text-[9px] text-blue-500 opacity-60">
                           🔗
                         </span>
                       )}
                     </div>
-                    <div className="text-foreground text-[11px] leading-relaxed pl-4 border-l-2 border-primary/10 hover:border-primary/30 transition-colors">
+                    <div className="text-foreground text-[10px] sm:text-[11px] leading-relaxed pl-3 sm:pl-4 border-l-2 border-primary/10">
                       {msg.message}
                     </div>
                   </div>
@@ -419,7 +423,7 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder={isAnonymous ? "anon mode..." : "say gm..."}
-                className="text-xs bg-muted/30 border-primary/20 font-pixel focus:border-primary/50 transition-colors"
+                className="text-xs bg-muted/30 border-primary/20 font-pixel"
                 onKeyPress={handleKeyPress}
                 maxLength={280}
               />
@@ -427,17 +431,16 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
                 size="sm"
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim()}
-                className="bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                className="bg-primary hover:bg-primary/90 disabled:opacity-50"
               >
                 <Send className="w-3 h-3" />
               </Button>
             </div>
             
-            <div className="text-[9px] text-muted-foreground text-center font-pixel opacity-60 space-y-1">
+            <div className="text-[8px] sm:text-[9px] text-muted-foreground text-center font-pixel opacity-60 space-y-1">
               <div>
                 {isAnonymous ? `${userEmoji} anon mode` : connected ? `${userEmoji} ${truncateWallet(publicKey?.toString() || '')}` : 'wallet not connected'}
               </div>
-              <div>💬 Be nice • No spam • Have fun!</div>
             </div>
           </div>
         </CardContent>

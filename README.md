@@ -1,73 +1,98 @@
-# Welcome to your Lovable project
+# SolPage - Advertise on the Famous Pixel Grid
 
-## Project info
+**SolPage** is a modern recreation of the legendary Million Dollar Homepage from 2005, built on the Solana blockchain. Buy pixels to advertise your brand on our permanent grid. Each pixel you own becomes a permanent advertising space that drives traffic to your website forever.
 
-**URL**: https://lovable.dev/projects/8eddb90f-686d-4b62-b9bd-808c6a9fb9dc
+## 🚀 Features
 
-## How can I edit this code?
+- **1,000,000 Pixels**: 100x100 grid of advertising space
+- **Solana Blockchain**: Secure, permanent ownership via NFTs
+- **Real-time Chat**: Connect with other advertisers
+- **Mobile Responsive**: Works perfectly on all devices
+- **Permanent Storage**: Images stored on Arweave for permanence
+- **0.01 SOL per Pixel**: Affordable advertising for everyone
 
-There are several ways of editing your application.
+## 🛠 Technologies
 
-**Use Lovable**
+This project is built with modern web technologies:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8eddb90f-686d-4b62-b9bd-808c6a9fb9dc) and start prompting.
+- **Frontend**: React, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Blockchain**: Solana Web3.js, Wallet Adapter
+- **Storage**: Arweave for permanent image storage
+- **Database**: Supabase for real-time features
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🏃‍♂️ Quick Start
 
-**Use your preferred IDE**
+### Prerequisites
+- Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- A Solana wallet (Phantom, Solflare, etc.)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to project directory
+cd pixel-genesis-grid
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🎯 How It Works
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. **Connect Wallet**: Connect your Solana wallet (Phantom, Solflare, etc.)
+2. **Select Pixels**: Click and drag to select pixels on the 100x100 grid
+3. **Upload Image**: Choose an image to display in your selected area
+4. **Add Link**: Optionally add a URL to drive traffic to your website
+5. **Mint NFT**: Pay 0.01 SOL per pixel and mint your permanent ad space
 
-**Use GitHub Codespaces**
+## 🌐 Live Demo
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Visit [SolPage](https://solpage.com) to see the live application.
 
-## What technologies are used for this project?
+## 📝 Development
 
-This project is built with:
+### Project Structure
+```
+src/
+├── components/          # React components
+├── hooks/              # Custom React hooks
+├── lib/                # Utility libraries (Solana, Arweave)
+├── api/                # API functions
+├── types/              # TypeScript type definitions
+└── pages/              # Page components
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Key Components
+- `PixelGrid`: Interactive 100x100 pixel grid
+- `SelectionPanel`: Pixel selection and minting interface
+- `PublicChat`: Real-time chat for users
+- `Header`: Navigation and wallet connection
+- `StatsBar`: Live statistics display
 
-## How can I deploy this project?
+## 🔧 Configuration
 
-Simply open [Lovable](https://lovable.dev/projects/8eddb90f-686d-4b62-b9bd-808c6a9fb9dc) and click on Share -> Publish.
+### Environment Variables
+Create a `.env` file with:
+```
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_ARWEAVE_GATEWAY=your_arweave_gateway
+```
 
-## Can I connect a custom domain to my Lovable project?
+## 📄 License
 
-Yes, you can!
+This project is open source and available under the [MIT License](LICENSE).
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🤝 Contributing
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📞 Support
+
+For support, please open an issue on GitHub or contact us through our website.
