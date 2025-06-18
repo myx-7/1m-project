@@ -62,7 +62,7 @@ export const HowItWorksDialog = ({ open, onOpenChange }: HowItWorksDialogProps) 
         <div className="space-y-6 mt-6">
           <div className="bg-foreground/10 border border-foreground/20 rounded-lg p-4">
             <p className="text-sm text-foreground">
-              <strong className="font-pixel">millionsolpage.com</strong> is a modern reimagining of The Million Dollar Homepage, 
+              <strong className="font-pixel">solanapage.com</strong> is a modern reimagining of The Million Dollar Homepage, 
               but this time on the blockchain. Each pixel you purchase becomes an NFT that you own forever.
             </p>
           </div>
@@ -86,7 +86,7 @@ export const HowItWorksDialog = ({ open, onOpenChange }: HowItWorksDialogProps) 
           </div>
 
           <div className="space-y-4 pt-4 border-t border-border">
-            <h3 className="font-semibold text-foreground font-pixel">Why millionsolpage.com?</h3>
+            <h3 className="font-semibold text-foreground font-pixel">Why solanapage.com?</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <span className="text-foreground mt-0.5">•</span>
