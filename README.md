@@ -1,6 +1,6 @@
-# SolPage - Advertise on the Famous Pixel Grid
+# SolanaPage - Advertise on the Famous Pixel Grid
 
-**SolPage** is a modern recreation of the legendary Million Dollar Homepage from 2005, built on the Solana blockchain. Buy pixels to advertise your brand on our permanent grid. Each pixel you own becomes a permanent advertising space that drives traffic to your website forever.
+**SolanaPage** is a modern recreation of the legendary Million Dollar Homepage from 2005, built on the Solana blockchain. Buy pixels to advertise your brand on our permanent grid. Each pixel you own becomes a permanent advertising space that drives traffic to your website forever.
 
 ## 🚀 Features
 
@@ -53,7 +53,7 @@ npm run dev
 
 ## 🌐 Live Demo
 
-Visit [SolPage](https://solpage.com) to see the live application.
+Visit [SolanaPage](https://solanapage.com) to see the live application.
 
 ## 📝 Development
 

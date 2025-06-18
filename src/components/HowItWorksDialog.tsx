@@ -52,7 +52,7 @@ export const HowItWorksDialog = ({ open, onOpenChange }: HowItWorksDialogProps) 
       <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="text-center">
           <DialogTitle className="text-xl sm:text-2xl font-bold font-pixel mb-2">
-            How SolPage Works
+            How SolanaPage Works
           </DialogTitle>
           <DialogDescription className="text-sm sm:text-base text-muted-foreground">
             Advertise your brand on the famous pixel grid. Each pixel you buy becomes a permanent advertising space that drives traffic to your website.

@@ -35,7 +35,7 @@ export const Logo = ({
       )}>
         <img 
           src="/pixel-logo.png" 
-          alt="SolPage Logo" 
+          alt="SolanaPage Logo" 
           className="w-full h-full object-contain"
         />
       </div>
@@ -47,7 +47,7 @@ export const Logo = ({
             "font-bold text-foreground leading-none font-mono tracking-tight",
             sizeClasses[size].text
           )}>
-            <span className="hidden sm:inline">SolPage</span>
+            <span className="hidden sm:inline">SolanaPage</span>
             <span className="sm:hidden">SP</span>
           </h1>
         </div>

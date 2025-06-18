@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Github,
   Twitter,
+  BookOpen,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -25,12 +26,14 @@ import { HowItWorksDialog } from "./HowItWorksDialog";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { Logo } from "./Logo";
+import { useNavigate } from "react-router-dom";
 
 export const Header = () => {
   const { publicKey, connected, disconnect } = useWallet();
   const { visible, setVisible } = useWalletModal();
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -93,6 +96,16 @@ export const Header = () => {
             >
               <Info className="w-4 h-4 mr-2" />
               How it works
+            </Button>
+
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => navigate("/docs")}
+              className="text-muted-foreground hover:text-foreground font-sans text-xs"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Docs
             </Button>
 
             <Button
@@ -165,8 +178,8 @@ export const Header = () => {
                   <Info className="w-4 h-4 mr-2" />
                   How it works
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ExternalLink className="w-4 h-4 mr-2" />
+                <DropdownMenuItem onClick={() => navigate("/docs")}>
+                  <BookOpen className="w-4 h-4 mr-2" />
                   Documentation
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

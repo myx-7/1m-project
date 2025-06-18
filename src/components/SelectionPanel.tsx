@@ -127,8 +127,8 @@ export const SelectionPanel = ({ selectedCount, floorPrice, onClearSelection, is
       
       // Step 2: Create and upload metadata
       const metadata = {
-        name: `SolPage Pixels ${pixelData.startX},${pixelData.startY}`,
-        description: `SolPage Pixel NFT covering ${selectedCount} pixels from (${pixelData.startX},${pixelData.startY}) to (${pixelData.endX},${pixelData.endY}). Own a piece of internet history on Solana!`,
+        name: `SolanaPage Pixels ${pixelData.startX},${pixelData.startY}`,
+        description: `SolanaPage Pixel NFT covering ${selectedCount} pixels from (${pixelData.startX},${pixelData.startY}) to (${pixelData.endX},${pixelData.endY}). Own a piece of internet history on Solana!`,
         image: imageResult.url,
         external_url: linkUrl || undefined,
         attributes: [
