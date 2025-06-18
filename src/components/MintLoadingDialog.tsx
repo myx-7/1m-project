@@ -18,32 +18,32 @@ interface MintingState {
 interface MintLoadingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  blockCount: number;
+  pixelCount: number;
   mintingState?: MintingState;
 }
 
 const getStepMessage = (step?: string) => {
   switch (step) {
     case 'uploading':
-      return { text: "Uploading to Arweave...", icon: <Upload className="w-5 h-5" /> };
+      return { text: "Uploading to Arweave...", icon: <Upload className="w-4 h-4 sm:w-5 sm:h-5" /> };
     case 'minting':
-      return { text: "Minting on Solana...", icon: <Zap className="w-5 h-5" /> };
+      return { text: "Minting on Solana...", icon: <Zap className="w-4 h-4 sm:w-5 sm:h-5" /> };
     case 'saving':
-      return { text: "Saving to database...", icon: <Save className="w-5 h-5" /> };
+      return { text: "Saving to database...", icon: <Save className="w-4 h-4 sm:w-5 sm:h-5" /> };
     default:
-      return { text: "Preparing your pixels...", icon: <Sparkles className="w-5 h-5" /> };
+      return { text: "Preparing your pixels...", icon: <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" /> };
   }
 };
 
 const loadingMessages = [
-  { text: "Preparing your pixels...", icon: <Sparkles className="w-5 h-5" /> },
-  { text: "Connecting to blockchain...", icon: <Zap className="w-5 h-5" /> },
-  { text: "Minting your NFTs...", icon: <Star className="w-5 h-5" /> },
-  { text: "Almost there...", icon: <Heart className="w-5 h-5" /> },
-  { text: "Success! Welcome to history!", icon: <CheckCircle className="w-5 h-5" /> },
+  { text: "Preparing your pixels...", icon: <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { text: "Connecting to blockchain...", icon: <Zap className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { text: "Publishing your ad...", icon: <Star className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { text: "Almost there...", icon: <Heart className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { text: "Success! Welcome to history!", icon: <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" /> },
 ];
 
-export const MintLoadingDialog = ({ open, onOpenChange, blockCount, mintingState }: MintLoadingDialogProps) => {
+export const MintLoadingDialog = ({ open, onOpenChange, pixelCount, mintingState }: MintLoadingDialogProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -150,65 +150,54 @@ export const MintLoadingDialog = ({ open, onOpenChange, blockCount, mintingState
 
   const getStatusIcon = () => {
     if (mintingState?.error) {
-      return <XCircle className="w-10 h-10 text-red-500" />;
+      return <XCircle className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" />;
     }
     if (mintingState?.success) {
-      return <CheckCircle className="w-10 h-10 animate-bounce" />;
+      return <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10" />;
     }
     if (mintingState?.isLoading || !useMintingState) {
-      return (
-        <div className="relative">
-          <Loader2 className="w-10 h-10 animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            {currentMessage.icon}
-          </div>
-        </div>
-      );
+      return <Loader2 className="w-8 h-8 sm:w-10 sm:h-10" />;
     }
-    return <Sparkles className="w-10 h-10" />;
+    return <Sparkles className="w-8 h-8 sm:w-10 sm:h-10" />;
   };
 
   const getTitle = () => {
     if (mintingState?.error) return "Minting Failed";
     if (mintingState?.success) return "Success! 🎉";
-    if (mintingState?.isLoading) return `Minting ${blockCount} blocks...`;
-    return isComplete ? "Success! 🎉" : `Minting ${blockCount} blocks...`;
+    if (mintingState?.isLoading) return `Minting ${pixelCount} pixels...`;
+    return isComplete ? "Success! 🎉" : `Minting ${pixelCount} pixels...`;
   };
 
   const getMessage = () => {
     if (mintingState?.error) return mintingState.error;
-    if (mintingState?.success) return "Your NFT has been minted successfully!";
+    if (mintingState?.success) return "Your ad is now live and driving traffic!";
     return currentMessage.text;
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md border-0 bg-transparent shadow-none">
-        <div className="bg-card border border-border rounded-lg p-8 text-center space-y-6 relative overflow-hidden">
-          {/* Background animation */}
-          <div className="absolute inset-0 bg-gradient-to-br from-foreground/5 via-transparent to-foreground/5 animate-pulse" />
-          
-          {/* Content */}
-          <div className="relative z-10 space-y-6">
+      <DialogContent className="w-[90vw] max-w-md border-0 bg-transparent shadow-none p-0">
+        <div className="bg-card border border-border rounded-lg p-4 sm:p-8 text-center space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Icon */}
             <div className={cn(
-              "mx-auto w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500",
+              "mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center",
               mintingState?.success || isComplete
-                ? "bg-foreground text-background scale-110" 
+                ? "bg-foreground text-background" 
                 : mintingState?.error
-                ? "bg-red-50 text-red-600 scale-110"
+                ? "bg-red-50 text-red-600"
                 : "bg-foreground/10 text-foreground"
             )}>
               {getStatusIcon()}
             </div>
 
             {/* Message */}
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold font-pixel text-foreground">
+            <div className="space-y-1 sm:space-y-2">
+              <h3 className="text-lg sm:text-xl font-bold font-pixel text-foreground">
                 {getTitle()}
               </h3>
               <p className={cn(
-                "text-sm transition-all duration-500",
+                "text-sm px-2",
                 mintingState?.success || isComplete ? "text-foreground font-semibold" : 
                 mintingState?.error ? "text-red-600" : "text-muted-foreground"
               )}>
@@ -218,15 +207,15 @@ export const MintLoadingDialog = ({ open, onOpenChange, blockCount, mintingState
 
             {/* Progress dots (only show if not using mintingState) */}
             {!useMintingState && (
-              <div className="flex justify-center gap-2">
+              <div className="flex justify-center gap-1.5 sm:gap-2">
                 {loadingMessages.map((_, index) => (
                   <div
                     key={index}
                     className={cn(
-                      "w-2 h-2 rounded-full transition-all duration-300",
+                      "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full",
                       index <= currentMessageIndex
                         ? isComplete && index === loadingMessages.length - 1
-                          ? "bg-foreground w-3 h-3"
+                          ? "bg-foreground w-2 h-2 sm:w-3 sm:h-3"
                           : "bg-foreground"
                         : "bg-muted"
                     )}
@@ -237,14 +226,14 @@ export const MintLoadingDialog = ({ open, onOpenChange, blockCount, mintingState
 
             {/* Step indicator for minting process */}
             {useMintingState && mintingState.isLoading && (
-              <div className="flex justify-center gap-2">
+              <div className="flex justify-center gap-1.5 sm:gap-2">
                 {['uploading', 'minting', 'saving'].map((step, index) => (
                   <div
                     key={step}
                     className={cn(
-                      "w-2 h-2 rounded-full transition-all duration-300",
+                      "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full",
                       step === mintingState.currentStep
-                        ? "bg-foreground w-3 h-3"
+                        ? "bg-foreground w-2 h-2 sm:w-3 sm:h-3"
                         : "bg-muted"
                     )}
                   />
@@ -254,7 +243,7 @@ export const MintLoadingDialog = ({ open, onOpenChange, blockCount, mintingState
 
             {/* Emotional messages */}
             {!useMintingState && !isComplete && (
-              <div className="text-xs text-muted-foreground animate-pulse">
+              <div className="text-xs text-muted-foreground px-2">
                 {currentMessageIndex === 0 && "Getting everything ready for you... 💫"}
                 {currentMessageIndex === 1 && "This is going to be amazing! 🚀"}
                 {currentMessageIndex === 2 && "Creating your piece of history... 🎨"}
@@ -264,16 +253,16 @@ export const MintLoadingDialog = ({ open, onOpenChange, blockCount, mintingState
 
             {/* Success message */}
             {(mintingState?.success || isComplete) && (
-              <div className="space-y-2 animate-fade-in">
+              <div className="space-y-2 px-2">
                 <p className="text-sm text-muted-foreground">
-                  Your pixels are now permanently on the blockchain!
+                  Your ad space is now permanent and driving traffic!
                 </p>
                 {mintingState?.transactionSignature && (
                   <a 
-                    href={`https://explorer.solana.com/tx/${mintingState.transactionSignature}`}
+                    href={`https://explorer.solana.com/tx/${mintingState.transactionSignature}?cluster=devnet`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-foreground font-pixel underline hover:no-underline"
+                    className="text-xs text-foreground font-pixel underline hover:no-underline block"
                   >
                     View on Solana Explorer →
                   </a>
@@ -286,7 +275,7 @@ export const MintLoadingDialog = ({ open, onOpenChange, blockCount, mintingState
               <div className="space-y-3">
                 <button
                   onClick={() => onOpenChange(false)}
-                  className="px-4 py-2 text-xs bg-foreground text-background rounded hover:bg-foreground/90 transition-colors"
+                  className="px-4 py-2 text-xs bg-foreground text-background rounded hover:bg-foreground/90"
                 >
                   Close
                 </button>

@@ -81,7 +81,7 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
     const countInterval = setInterval(async () => {
       const count = await getOnlineUsersCount();
       setOnlineCount(count);
-    }, 60000); // Every 60 seconds for better performance
+    }, 30000); // Every 30 seconds
 
     return () => {
       console.log('🧹 Cleaning up chat subscription');
@@ -95,12 +95,11 @@ export const PublicChat = ({ onClose, isDesktop = true }: PublicChatProps) => {
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollAreaRef.current && !isMinimized) {
-      // Use requestAnimationFrame for better performance
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         if (scrollAreaRef.current) {
           scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
         }
-      });
+      }, 100);
     }
   }, [messages, isMinimized]);
 
