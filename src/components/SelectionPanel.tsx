@@ -471,7 +471,7 @@ export const SelectionPanel = ({ selectedCount, floorPrice, onClearSelection, is
               <div className="text-xs text-green-600 text-center p-2 bg-green-50 rounded">
                 🎉 NFT minted successfully! 
                 <a 
-                  href={`https://explorer.solana.com/tx/${mintingState.transactionSignature}?cluster=devnet`}
+                  href={`https://explorer.solana.com/tx/${mintingState.transactionSignature}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block underline hover:no-underline mt-1"

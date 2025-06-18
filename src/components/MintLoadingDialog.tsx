@@ -270,7 +270,7 @@ export const MintLoadingDialog = ({ open, onOpenChange, blockCount, mintingState
                 </p>
                 {mintingState?.transactionSignature && (
                   <a 
-                    href={`https://explorer.solana.com/tx/${mintingState.transactionSignature}?cluster=devnet`}
+                    href={`https://explorer.solana.com/tx/${mintingState.transactionSignature}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-foreground font-pixel underline hover:no-underline"

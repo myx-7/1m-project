@@ -16,8 +16,8 @@ import { PixelData, PixelNFTMetadata, PIXEL_PRICE_SOL } from '@/types';
 import UploadFileToBlockChain from './arweave';
 
 // Solana configuration
-export const SOLANA_NETWORK = 'devnet';
-export const RPC_ENDPOINT = clusterApiUrl(SOLANA_NETWORK);
+export const SOLANA_NETWORK = 'mainnet-beta';
+export const RPC_ENDPOINT = process.env.VITE_RPC_ENDPOINT || 'https://wallis-u8zn05-fast-mainnet.helius-rpc.com';
 
 // Initialize connection
 export const connection = new Connection(RPC_ENDPOINT, 'confirmed');

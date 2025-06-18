@@ -16,10 +16,10 @@ interface Props {
 
 export const SolanaWalletProvider: FC<Props> = ({ children }) => {
   // Network can be set to 'devnet', 'testnet', or 'mainnet-beta'
-  const network = WalletAdapterNetwork.Devnet;
+  const network = WalletAdapterNetwork.Mainnet;
 
   // RPC endpoint
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const endpoint = process.env.VITE_RPC_ENDPOINT || 'https://wallis-u8zn05-fast-mainnet.helius-rpc.com';
 
   // Wallet adapters
   const wallets = useMemo(
