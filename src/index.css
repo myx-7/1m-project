@@ -112,4 +112,54 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Mobile optimization */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+  
+  /* Touch optimization for mobile */
+  button, a, input, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    /* IE and Edge */
+    -ms-overflow-style: none;
+    /* Firefox */
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    /* Safari and Chrome */
+    display: none;
+  }
+  
+  /* Mobile-specific utilities */
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+  
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+  
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Prevent zoom on input focus (mobile Safari) */
+  .prevent-zoom {
+    font-size: 16px;
+  }
+  
+  @media screen and (max-width: 640px) {
+    .prevent-zoom {
+      font-size: 16px !important;
+    }
+  }
 }

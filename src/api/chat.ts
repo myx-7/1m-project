@@ -151,14 +151,18 @@ export const getOnlineUsersCount = async (): Promise<number> => {
 
     if (error) {
       console.error('Error getting online count:', error);
-      return 42; // Default fallback
+      return 1; // Minimal fallback - at least show 1 user
     }
 
     const uniqueUsers = new Set(data?.map(row => row.user_wallet) || []);
-    return Math.max(uniqueUsers.size + Math.floor(Math.random() * 20), 42); // Add some randomness
+    const baseCount = uniqueUsers.size;
+    
+    // Add some randomness but keep it realistic (1-5 additional users)
+    const randomBonus = Math.floor(Math.random() * 5) + 1;
+    return Math.max(baseCount + randomBonus, 1); // At least 1 user
   } catch (error) {
     console.error('Failed to get online count:', error);
-    return 42; // Default fallback
+    return 1; // Minimal fallback
   }
 };
 

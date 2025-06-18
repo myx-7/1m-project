@@ -84,8 +84,8 @@ export const PixelGrid = ({
         setNftRecords([]);
         setSoldPixels(new Set());
       } finally {
-        // Add a delay to show loading animation
-        setTimeout(() => setIsLoading(false), 800);
+        // Loading complete immediately for better performance
+        setIsLoading(false);
       }
     };
 
